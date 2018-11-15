@@ -1,9 +1,26 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #define DEBUG
-#include <naturewatch_RFID.h>
+#include "naturewatch_RFID.h"
 WiFiUDP Udp;
 
+// Debug print macros
+#ifdef DEBUG
+ #define DEBUG_PRINTLN(x)  Serial.println(x)
+#else
+ #define DEBUG_PRINTLN(x)
+#endif
+#ifdef DEBUG
+ #define DEBUG_PRINT(x)  Serial.print(x)
+#else
+ #define DEBUG_PRINT(x)
+#endif
+#ifdef DEBUG
+ #define DEBUG_PRINTHEX(x)  Serial.print(x, 16)
+#else
+ #define DEBUG_PRINTHEX(x)
+#endif
+  
 const char* ssid     = "piNet";
 const char* password = "XXXXXXXXXX";
 static unsigned int localUdpPort = 4210;
@@ -23,38 +40,29 @@ void setup() {
   WiFi.mode(WIFI_OFF);
 #ifdef DEBUG
   Serial.begin(115200);
-  Serial.println("start up");
 #endif
+  DEBUG_PRINTLN("start up");
 }
 
 void loop() {
-  //digitalWrite(2,HIGH);
+  
   //scan for a tag - if a tag is sucesfully scanned, return a 'true' and proceed
   if (myRFIDuino.scanForTag(tagData) == true)
   {
     digitalWrite(14, 1);
-#ifdef DEBUG
-    Serial.print("RFID Tag ID:"); //print a header to the Serial port.
-#endif
+    DEBUG_PRINTLN("RFID Tag ID:"); //print a header to the Serial port.
     //loop through the byte array
     for (int n = 0; n < 5; n++)
     {
-#ifdef DEBUG
-      Serial.print(tagData[n], 16); //print the byte in Decimal format
-#endif
+      DEBUG_PRINTHEX(tagData[n]); //print the byte in Decimal format
       if (n < 4) //only print the comma on the first 4 nunbers
       {
-#ifdef DEBUG
-        Serial.print(",");
-#endif
+        DEBUG_PRINT(",");
       }
     }
-#ifdef DEBUG
-    Serial.print("\n\r");//return character for next line
-#endif
+    DEBUG_PRINT("\n\r");//return character for next line
   //  sendWIFI();
   }
-  // }
   delay(30);
   if (millis() > 400) {
     prevMills = millis();
@@ -70,18 +78,12 @@ void sendWIFI() {
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
-#ifdef DEBUG
-    Serial.print(".");
-#endif
+    DEBUG_PRINT(".");
   }
-#ifdef DEBUG
-  Serial.println(" connected");
-#endif
+  DEBUG_PRINTLN(" connected");
 
   Udp.begin(localUdpPort);
-#ifdef DEBUG
-  Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
-#endif
+  DEBUG_PRINTLN(("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort));
   Udp.beginPacket("192.28.1.113", 800);
   Udp.write(replyPacket);
   Udp.endPacket();
@@ -89,5 +91,3 @@ void sendWIFI() {
 
   WiFi.mode(WIFI_OFF);
 }
-
-
