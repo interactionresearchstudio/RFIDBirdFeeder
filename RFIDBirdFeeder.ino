@@ -49,7 +49,20 @@ void setup() {
 }
 
 void loop() {
-  
+  updateRfid();
+  delay(30);
+  updateSleep();
+}
+
+// Update sleep interval
+void updateSleep() {
+  if (millis() > SLEEP_INTERVAL) {
+    ESP.deepSleep(SLEEP_INTERVAL * 1000);
+  }
+}
+
+// Scan for a tag
+void updateRfid() {
   //scan for a tag - if a tag is sucesfully scanned, return a 'true' and proceed
   if (rfid.scanForTag(tagData) == true)
   {
@@ -65,15 +78,6 @@ void loop() {
       }
     }
     DEBUG_PRINT("\n\r");//return character for next line
-  }
-  delay(30);
-  updateSleep();
-}
-
-// Update sleep interval
-void updateSleep() {
-  if (millis() > SLEEP_INTERVAL) {
-    ESP.deepSleep(SLEEP_INTERVAL * 1000);
   }
 }
 
