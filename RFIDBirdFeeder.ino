@@ -20,6 +20,8 @@ WiFiUDP Udp;
 #else
  #define DEBUG_PRINTHEX(x)
 #endif
+
+#define SLEEP_INTERVAL 400
   
 const char* ssid     = "piNet";
 const char* password = "XXXXXXXXXX";
@@ -33,7 +35,9 @@ long prevMillsWifi;
 int intervalWifi = 10000;
 byte count = 0;
 
-RFID myRFIDuino(1.1);
+
+
+RFID rfid(1.1);
 byte tagData[5]; //Holds the ID numbers from the tag
 
 void setup() {
@@ -47,7 +51,7 @@ void setup() {
 void loop() {
   
   //scan for a tag - if a tag is sucesfully scanned, return a 'true' and proceed
-  if (myRFIDuino.scanForTag(tagData) == true)
+  if (rfid.scanForTag(tagData) == true)
   {
     digitalWrite(14, 1);
     DEBUG_PRINTLN("RFID Tag ID:"); //print a header to the Serial port.
@@ -61,14 +65,17 @@ void loop() {
       }
     }
     DEBUG_PRINT("\n\r");//return character for next line
-  //  sendWIFI();
   }
   delay(30);
-  if (millis() > 400) {
-    prevMills = millis();
-    ESP.deepSleep(400000);
+  updateSleep();
+}
+
+// Update sleep interval
+void updateSleep() {
+  if (millis() > SLEEP_INTERVAL) {
+    ESP.deepSleep(SLEEP_INTERVAL * 1000);
   }
-}// end loop()
+}
 
 void sendWIFI() {
   //digitalWrite(2, 1);
