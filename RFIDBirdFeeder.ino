@@ -1,7 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #define DEBUG
-#include "naturewatch_RFID.h"
+#include "RFID.h"
 WiFiUDP Udp;
 
 // Debug print macros

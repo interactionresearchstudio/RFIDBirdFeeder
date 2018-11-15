@@ -6,7 +6,7 @@
 
 
 #include "Arduino.h"
-#include "naturewatch_RFID.h"
+#include "RFID.h"
 
 RFID::RFID(float version)
 {
