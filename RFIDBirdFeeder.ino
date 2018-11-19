@@ -1,8 +1,10 @@
+// Libraries
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
-#define DEBUG
 #include "RFID.h"
-WiFiUDP Udp;
+
+// DEBUG - uncomment for debug info via serial
+#define DEBUG
 
 // Debug print macros
 #ifdef DEBUG
@@ -21,13 +23,19 @@ WiFiUDP Udp;
  #define DEBUG_PRINTHEX(x)
 #endif
 
+// CONFIG DEFINES
 #define SLEEP_INTERVAL 400
-  
+
+// RTC data
+struct {
+  uint32_t crc32;
+  uint32_t unixTime;
+} rtcData;
+
+
+// WiFi settings
 const char* ssid     = "piNet";
 const char* password = "XXXXXXXXXX";
-static unsigned int localUdpPort = 4210;
-char incomingPacket[20];
-char  replyPacket[] = "Hi there!";
 
 long prevMills;
 int interval = 100;
@@ -35,10 +43,8 @@ long prevMillsWifi;
 int intervalWifi = 10000;
 byte count = 0;
 
-
-
 RFID rfid(1.1);
-byte tagData[5]; //Holds the ID numbers from the tag
+byte tagData[5];
 
 void setup() {
   WiFi.mode(WIFI_OFF);
@@ -46,59 +52,23 @@ void setup() {
   Serial.begin(115200);
 #endif
   DEBUG_PRINTLN("start up");
+
+  readRTCData();
+  if(rtcData.unixTime == 0) {
+    // Forgotten time.
+    rtcData.unixTime = 1542648526;
+    DEBUG_PRINTLN("Resetting Unix time.");
+  }
+  else {
+    rtcData.unixTime++;
+    writeRTCData();
+    DEBUG_PRINT("Unix Time: ");
+    DEBUG_PRINTLN(rtcData.unixTime);
+  }
 }
 
 void loop() {
   updateRfid();
   delay(30);
   updateSleep();
-}
-
-// Update sleep interval
-void updateSleep() {
-  if (millis() > SLEEP_INTERVAL) {
-    ESP.deepSleep(SLEEP_INTERVAL * 1000);
-  }
-}
-
-// Scan for a tag
-void updateRfid() {
-  //scan for a tag - if a tag is sucesfully scanned, return a 'true' and proceed
-  if (rfid.scanForTag(tagData) == true)
-  {
-    digitalWrite(14, 1);
-    DEBUG_PRINTLN("RFID Tag ID:"); //print a header to the Serial port.
-    //loop through the byte array
-    for (int n = 0; n < 5; n++)
-    {
-      DEBUG_PRINTHEX(tagData[n]); //print the byte in Decimal format
-      if (n < 4) //only print the comma on the first 4 nunbers
-      {
-        DEBUG_PRINT(",");
-      }
-    }
-    DEBUG_PRINT("\n\r");//return character for next line
-  }
-}
-
-void sendWIFI() {
-  //digitalWrite(2, 1);
-  prevMillsWifi = millis();
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    DEBUG_PRINT(".");
-  }
-  DEBUG_PRINTLN(" connected");
-
-  Udp.begin(localUdpPort);
-  DEBUG_PRINTLN(("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort));
-  Udp.beginPacket("192.28.1.113", 800);
-  Udp.write(replyPacket);
-  Udp.endPacket();
-  digitalWrite(14, 0);
-
-  WiFi.mode(WIFI_OFF);
 }
