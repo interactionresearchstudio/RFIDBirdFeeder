@@ -25,8 +25,8 @@
 #endif
 
 // CONFIG DEFINES
-#define WLAN_SSID "piNet"
-#define WLAN_PASS "xxxxxxxxx"
+#define WLAN_SSID "IRS Wireless"
+#define WLAN_PASS "xxxxxxxx"
 #define HOST "http://feedernet-test.herokuapp.com"
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 500
@@ -67,10 +67,9 @@ void setup() {
     rtcData.unixTime = getTime();
   }
   
-  rtcData.unixTime++;
+  
   DEBUG_PRINT("Unix Time: ");
   DEBUG_PRINTLN(rtcData.unixTime);
-  writeRTCData();
 }
 
 void loop() {
