@@ -24,12 +24,14 @@
 #endif
 
 // CONFIG DEFINES
-#define SLEEP_INTERVAL 400
+#define SLEEP_INTERVAL 500
 
 // RTC data
 struct {
   uint32_t crc32;
   uint32_t unixTime;
+  uint16_t channel;
+  uint8_t bssid[6];
 } rtcData;
 
 
@@ -51,13 +53,14 @@ void setup() {
 #ifdef DEBUG
   Serial.begin(115200);
 #endif
-  DEBUG_PRINTLN("start up");
+  DEBUG_PRINTLN("Start up");
 
   readRTCData();
-  if(rtcData.unixTime == 0) {
+  if(rtcData.unixTime < 1542640000 || rtcData.unixTime > 1900000000) {
     // Forgotten time.
-    rtcData.unixTime = 1542648526;
     DEBUG_PRINTLN("Resetting Unix time.");
+    rtcData.unixTime = 1542648526;
+    writeRTCData();
   }
   else {
     rtcData.unixTime++;

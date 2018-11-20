@@ -21,7 +21,7 @@ uint32_t calculateCRC32(const uint8_t *data, size_t length) {
 void readRTCData() {
   if (ESP.rtcUserMemoryRead(0, (uint32_t*) &rtcData, sizeof(rtcData))) {
     DEBUG_PRINTLN("Read from RTC user memory.");
-    uint32_t crcOfData = calculateCRC32((uint8_t*) &rtcData.unixTime, sizeof(rtcData.unixTime));
+    uint32_t crcOfData = calculateCRC32(((uint8_t*) &rtcData) + 4, sizeof(rtcData) - 4);
     DEBUG_PRINT("CRC32 of data: ");
     DEBUG_PRINTHEX(crcOfData);
     DEBUG_PRINTLN("");
@@ -30,9 +30,9 @@ void readRTCData() {
     DEBUG_PRINTLN("");
     
     if (crcOfData != rtcData.crc32) {
-      DEBUG_PRINTLN("CRC32 in RTC memory doesn't match CRC32 of data. Data is probably invalid!");
+      DEBUG_PRINTLN("CRC32 in RTC memory doesn't match CRC32 of data. Data is invalid!");
     } else {
-      DEBUG_PRINTLN("CRC32 check ok, data is probably valid.");
+      DEBUG_PRINTLN("CRC32 check ok, data is valid.");
     }
   }
 }
@@ -47,5 +47,5 @@ void writeRTCData() {
 
 // Update CRC32 validator.
 void updateCRC32() {
-  rtcData.crc32 = calculateCRC32((uint8_t*) &rtcData.unixTime, sizeof(rtcData.unixTime));
+  rtcData.crc32 = calculateCRC32(((uint8_t*) &rtcData) + 4, sizeof(rtcData) - 4);
 }
