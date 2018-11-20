@@ -1,4 +1,5 @@
 void connectToWiFi() {
+  WiFi.mode(WIFI_STA);
   if (isRTCValid()) {
     DEBUG_PRINT("Performing quick connect. Channel: ");
     DEBUG_PRINT(rtcData.channel);

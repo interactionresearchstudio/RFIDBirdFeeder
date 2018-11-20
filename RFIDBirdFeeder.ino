@@ -1,6 +1,7 @@
 // Libraries
 #include <ESP8266WiFi.h>
-#include <WiFiUdp.h>
+#include <ESP8266HTTPClient.h>
+#include <ArduinoJson.h>
 #include "RFID.h"
 
 // DEBUG - uncomment for debug info via serial
@@ -8,24 +9,26 @@
 
 // Debug print macros
 #ifdef DEBUG
- #define DEBUG_PRINTLN(x)  Serial.println(x)
+#define DEBUG_PRINTLN(x)  Serial.println(x)
 #else
- #define DEBUG_PRINTLN(x)
+#define DEBUG_PRINTLN(x)
 #endif
 #ifdef DEBUG
- #define DEBUG_PRINT(x)  Serial.print(x)
+#define DEBUG_PRINT(x)  Serial.print(x)
 #else
- #define DEBUG_PRINT(x)
+#define DEBUG_PRINT(x)
 #endif
 #ifdef DEBUG
- #define DEBUG_PRINTHEX(x)  Serial.print(x, 16)
+#define DEBUG_PRINTHEX(x)  Serial.print(x, 16)
 #else
- #define DEBUG_PRINTHEX(x)
+#define DEBUG_PRINTHEX(x)
 #endif
 
 // CONFIG DEFINES
 #define WLAN_SSID "piNet"
-#define WLAN_PASS "xxxxxxxx"
+#define WLAN_PASS "xxxxxxxxx"
+#define HOST "http://feedernet-test.herokuapp.com"
+#define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 500
 #define WIFI_QUICK_MAX_RETRIES 100
 #define WIFI_REGULAR_MAX_RETRIES 600
@@ -37,11 +40,6 @@ struct {
   uint16_t channel;
   uint8_t bssid[6];
 } rtcData;
-
-
-// WiFi settings
-const char* ssid     = "piNet";
-const char* password = "XXXXXXXXXX";
 
 long prevMills;
 int interval = 100;
@@ -58,23 +56,21 @@ void setup() {
   Serial.begin(115200);
 #endif
   DEBUG_PRINTLN("Start up");
+  DEBUG_PRINT("Reset reason: ");
+  DEBUG_PRINTLN(ESP.getResetReason());
 
   readRTCData();
 
-  connectToWiFi();
+  if (ESP.getResetReason() != "Deep-Sleep Wake") {
+    DEBUG_PRINTLN("Reset from Powerup. Getting time...");
+    connectToWiFi();
+    rtcData.unixTime = getTime();
+  }
   
-  if(rtcData.unixTime < 1542640000 || rtcData.unixTime > 1900000000) {
-    // Forgotten time.
-    DEBUG_PRINTLN("Resetting Unix time.");
-    rtcData.unixTime = 1542648526;
-    writeRTCData();
-  }
-  else {
-    rtcData.unixTime++;
-    writeRTCData();
-    DEBUG_PRINT("Unix Time: ");
-    DEBUG_PRINTLN(rtcData.unixTime);
-  }
+  rtcData.unixTime++;
+  DEBUG_PRINT("Unix Time: ");
+  DEBUG_PRINTLN(rtcData.unixTime);
+  writeRTCData();
 }
 
 void loop() {

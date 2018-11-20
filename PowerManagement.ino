@@ -1,3 +1,4 @@
+
 // Update sleep interval
 void updateSleep() {
   if (millis() > SLEEP_INTERVAL) {
