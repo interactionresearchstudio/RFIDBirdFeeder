@@ -1,3 +1,5 @@
+boolean rtcValid = false;
+
 // Check validity of data saved in RTC user memory.
 uint32_t calculateCRC32(const uint8_t *data, size_t length) {
   uint32_t crc = 0xffffffff;
@@ -31,8 +33,10 @@ void readRTCData() {
     
     if (crcOfData != rtcData.crc32) {
       DEBUG_PRINTLN("CRC32 in RTC memory doesn't match CRC32 of data. Data is invalid!");
+      rtcValid = false;
     } else {
       DEBUG_PRINTLN("CRC32 check ok, data is valid.");
+      rtcValid = true;
     }
   }
 }
@@ -48,4 +52,9 @@ void writeRTCData() {
 // Update CRC32 validator.
 void updateCRC32() {
   rtcData.crc32 = calculateCRC32(((uint8_t*) &rtcData) + 4, sizeof(rtcData) - 4);
+}
+
+// Return true if RTC data is valid.
+boolean isRTCValid() {
+  return rtcValid;
 }

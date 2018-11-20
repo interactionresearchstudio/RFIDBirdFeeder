@@ -24,7 +24,11 @@
 #endif
 
 // CONFIG DEFINES
+#define WLAN_SSID "piNet"
+#define WLAN_PASS "xxxxxxxx"
 #define SLEEP_INTERVAL 500
+#define WIFI_QUICK_MAX_RETRIES 100
+#define WIFI_REGULAR_MAX_RETRIES 600
 
 // RTC data
 struct {
@@ -56,6 +60,9 @@ void setup() {
   DEBUG_PRINTLN("Start up");
 
   readRTCData();
+
+  connectToWiFi();
+  
   if(rtcData.unixTime < 1542640000 || rtcData.unixTime > 1900000000) {
     // Forgotten time.
     DEBUG_PRINTLN("Resetting Unix time.");
