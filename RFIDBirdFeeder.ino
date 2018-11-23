@@ -2,7 +2,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h>
-#include "RFID.h"
+#include "naturewatch_RFID.h"
 
 // DEBUG - uncomment for debug info via serial
 #define DEBUG
@@ -29,9 +29,12 @@
 #define WLAN_PASS "xxxxxxxx"
 #define HOST "http://feedernet-test.herokuapp.com"
 #define HTTP_TIMEOUT 5000
-#define SLEEP_INTERVAL 500
+#define SLEEP_INTERVAL 400
 #define WIFI_QUICK_MAX_RETRIES 100
 #define WIFI_REGULAR_MAX_RETRIES 600
+#define FEEDERSTUB "TestFeeder"
+
+RFID rfidModule(1.1);
 
 // RTC data
 struct {
@@ -47,7 +50,6 @@ long prevMillsWifi;
 int intervalWifi = 10000;
 byte count = 0;
 
-RFID rfid(1.1);
 byte tagData[5];
 
 void setup() {
@@ -58,8 +60,6 @@ void setup() {
   DEBUG_PRINTLN("Start up");
   DEBUG_PRINT("Reset reason: ");
   DEBUG_PRINTLN(ESP.getResetReason());
-
-  readRTCData();
 
   if (ESP.getResetReason() != "Deep-Sleep Wake") {
     DEBUG_PRINTLN("Reset from Powerup. Getting time...");

@@ -62,14 +62,18 @@ unsigned long getTime() {
 
 // Send tracking event to server.
 void postTrack(String rfid) {
-  const size_t bufferSize = JSON_OBJECT_SIZE(1);
+  const size_t bufferSize = JSON_OBJECT_SIZE(3);
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
   JsonObject& root = jsonBuffer.createObject();
+  root["datetime"] = " ";
   root["rfid"] = rfid;
+  root["stub"] = FEEDERSTUB;
 
   String payload;
   root.printTo(payload);
+  DEBUG_PRINT("Payload: ");
+  DEBUG_PRINTLN(payload);
   DEBUG_PRINTLN("Posting track...");
   String res = postRequest("/api/recordTrack", payload);
   DEBUG_PRINTLN("Result: ");

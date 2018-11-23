@@ -1,7 +1,8 @@
 // Scan for a tag
 void updateRfid() {
+  
   //scan for a tag - if a tag is sucesfully scanned, return a 'true' and proceed
-  if (rfid.scanForTag(tagData) == true)
+  if (rfidModule.scanForTag(tagData) == true)
   {
     digitalWrite(14, 1);
     DEBUG_PRINTLN("RFID Tag ID:"); //print a header to the Serial port.
@@ -17,6 +18,8 @@ void updateRfid() {
       }
     }
     DEBUG_PRINT("\n\r");//return character for next line
+    connectToWiFi();
     postTrack(rfid);
   }
+  digitalWrite(14, 0);
 }
