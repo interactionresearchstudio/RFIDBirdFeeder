@@ -1,3 +1,4 @@
+// Connect to WiFi - attempt at quick connect, fall back to normal connect.
 void connectToWiFi() {
   WiFi.mode(WIFI_STA);
   if (isRTCValid()) {

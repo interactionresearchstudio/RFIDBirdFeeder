@@ -22,6 +22,31 @@ String getRequest(char* endpoint) {
   }
 }
 
+// Basic POST request.
+String postRequest(char* endpoint, String request) {
+  HTTPClient http;
+
+  http.begin(String(HOST) + String(endpoint));
+  http.addHeader("Content-Type", "application/json");
+
+  int httpCode = http.POST(request);
+
+  String result;
+  if (httpCode > 0) {
+    DEBUG_PRINT("HTTP code: ");
+    DEBUG_PRINTLN(httpCode);
+
+    if (httpCode == HTTP_CODE_OK) {
+      result = http.getString();
+      DEBUG_PRINTLN(result);
+      return result;
+    }
+  }
+  else {
+    DEBUG_PRINTLN("HTTP GET failed.");
+  }
+}
+
 // Get Unix time from server.
 unsigned long getTime() {
   const size_t bufferSize = JSON_OBJECT_SIZE(1) + 20;
@@ -35,13 +60,24 @@ unsigned long getTime() {
   return root["time"];
 }
 
-// Report power up event to server.
-void reportPowerup() {
+// Send tracking event to server.
+void postTrack(String rfid) {
+  const size_t bufferSize = JSON_OBJECT_SIZE(1);
+  DynamicJsonBuffer jsonBuffer(bufferSize);
 
+  JsonObject& root = jsonBuffer.createObject();
+  root["rfid"] = rfid;
+
+  String payload;
+  root.printTo(payload);
+  DEBUG_PRINTLN("Posting track...");
+  String res = postRequest("/api/recordTrack", payload);
+  DEBUG_PRINTLN("Result: ");
+  DEBUG_PRINTLN(res);
 }
 
-// Send tracked bird to server.
-void sendTrackEvent() {
+// Report power up event to server.
+void reportPowerup() {
 
 }
 

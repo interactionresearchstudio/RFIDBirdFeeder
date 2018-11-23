@@ -67,7 +67,6 @@ void setup() {
     rtcData.unixTime = getTime();
   }
   
-  
   DEBUG_PRINT("Unix Time: ");
   DEBUG_PRINTLN(rtcData.unixTime);
 }
