@@ -18,7 +18,8 @@ String getRequest(char* endpoint) {
     }
   }
   else {
-    DEBUG_PRINTLN("HTTP GET failed.");
+    DEBUG_PRINT("HTTP GET failed. Code: ");
+    DEBUG_PRINTLN(httpCode);
   }
 }
 
@@ -43,7 +44,8 @@ String postRequest(char* endpoint, String request) {
     }
   }
   else {
-    DEBUG_PRINTLN("HTTP GET failed.");
+    DEBUG_PRINT("HTTP POST failed. Code: ");
+    DEBUG_PRINTLN(httpCode);
   }
 }
 
