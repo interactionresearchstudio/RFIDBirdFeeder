@@ -1,7 +1,7 @@
 
 // Update sleep interval
 void updateSleep() {
-  if (millis() > SLEEP_INTERVAL) {
+  if (millis() >= WAKE_INTERVAL) {
 
     updateTime(SLEEP_INTERVAL);
     writeRTCData();

@@ -27,11 +27,12 @@
 
 // CONFIG DEFINES
 #define WLAN_SSID "IRS Wireless"
-#define WLAN_PASS "xxxxxxx"
+#define WLAN_PASS "xxxxxxxx"
 #define HOST "http://feedernet.herokuapp.com"
 #define FEEDERSTUB "StudioTestFeeder"
 #define HTTP_TIMEOUT 5000
-#define SLEEP_INTERVAL 500
+#define SLEEP_INTERVAL 1700
+#define WAKE_INTERVAL 300
 #define NIGHT_SLEEP_INTERVAL 1800000
 #define WIFI_QUICK_MAX_RETRIES 100
 #define WIFI_REGULAR_MAX_RETRIES 600
