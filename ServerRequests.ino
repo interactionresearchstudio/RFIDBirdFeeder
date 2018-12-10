@@ -104,3 +104,22 @@ void sendPing() {
   DEBUG_PRINTLN("Result: ");
   DEBUG_PRINTLN(res);
 }
+
+// Send ping to server
+void sendPowerup() {
+  const size_t bufferSize = JSON_OBJECT_SIZE(2);
+  DynamicJsonBuffer jsonBuffer(bufferSize);
+  
+  JsonObject& root = jsonBuffer.createObject();
+  root["stub"] = FEEDERSTUB;
+  root["type"] = "powerup";
+
+  String payload;
+  root.printTo(payload);
+  DEBUG_PRINT("Payload: ");
+  DEBUG_PRINTLN(payload);
+  DEBUG_PRINTLN("Sending Ping...");
+  String res = postRequest("/api/ping", payload);
+  DEBUG_PRINTLN("Result: ");
+  DEBUG_PRINTLN(res);
+}

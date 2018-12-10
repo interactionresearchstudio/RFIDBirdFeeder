@@ -11,8 +11,9 @@ void updateSleep() {
 
 void updateNightTime() {
   // Check if it's one hour before wake-up
+  rtcData.sleeping = 1;
   if (hour() == NIGHT_END - 1) {
-    if (hour() == NIGHT_END - 1 && (60 - minute()) <= NIGHT_SLEEP_INTERVAL) {
+    if (hour() == NIGHT_END - 1 && (60 - minute()) <= NIGHT_SLEEP_INTERVAL) { // BUG - comparing millis to secs
       DEBUG_PRINTLN("Last sleep before wakeup.");
       updateTime((60 - minute()) * 60 * 1000);
       writeRTCData();

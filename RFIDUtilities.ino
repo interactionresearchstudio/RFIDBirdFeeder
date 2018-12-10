@@ -1,6 +1,6 @@
 // Scan for a tag
 void updateRfid() {
-  
+
   //scan for a tag - if a tag is sucesfully scanned, return a 'true' and proceed
   if (rfidModule.scanForTag(tagData) == true)
   {
@@ -18,8 +18,34 @@ void updateRfid() {
       }
     }
     DEBUG_PRINT("\n\r");//return character for next line
+
+    DEBUG_PRINT("Last tag read: ");
+    DEBUG_PRINTLN(rtcData.previousTagTime);
+    DEBUG_PRINT("Last tag: ");
+    for (int i = 0; i < 5; i++) DEBUG_PRINTHEX(tagData[i]);
+    DEBUG_PRINTLN();
+
+    // Debouncing
+    for (int i = 0; i < 5; i++) {
+      if (tagData[i] != rtcData.previousTag[i]) {
+        DEBUG_PRINTLN("New tag");
+        break;
+      }
+      if (i == 4) {
+        // Same tag
+        DEBUG_PRINTLN("Same tag");
+        if (now() - rtcData.previousTagTime < TAG_DEBOUNCE) {
+          DEBUG_PRINTLN("Same tag within minute");
+          return;
+        }
+      }
+    }
     connectToWiFi();
     postTrack(rfid);
+    for (int i = 0; i < 5; i++) {
+      rtcData.previousTag[i] = tagData[i];
+    }
+    rtcData.previousTagTime = getUnixTime();
     digitalWrite(14, 0);
   }
 }

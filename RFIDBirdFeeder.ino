@@ -29,14 +29,15 @@
 #define WLAN_SSID "IRS Wireless"
 #define WLAN_PASS "xxxxxxx"
 #define HOST "http://feedernet.herokuapp.com"
-#define FEEDERSTUB "TestFeeder"
+#define FEEDERSTUB "StudioTestFeeder"
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 500
 #define NIGHT_SLEEP_INTERVAL 1800000
 #define WIFI_QUICK_MAX_RETRIES 100
 #define WIFI_REGULAR_MAX_RETRIES 600
-#define NIGHT_START 20
-#define NIGHT_END 4
+#define NIGHT_START 18
+#define NIGHT_END 6
+#define TAG_DEBOUNCE 60
 
 RFID rfidModule(1.1);
 
@@ -48,7 +49,9 @@ struct {
   uint16_t channel;
   uint8_t bssid[6];
   uint8_t previousTag[5];
-  uint8_t rtcBuffer[3];
+  uint8_t sleeping;
+  uint32_t previousTagTime;
+  uint8_t rtcBuffer[2];
 } rtcData;
 
 long prevMills;
@@ -78,11 +81,13 @@ void setup() {
     connectToWiFi();
     rtcData.unixTime = getTime();
     rtcData.unixTimeRemainder = 0;
+    for (int i=0; i<5; i++) rtcData.previousTag[i] = 0;
     setTime(rtcData.unixTime);
+    rtcData.previousTagTime = now() - 60;
     DEBUG_PRINT(hour());
     DEBUG_PRINT(" : ");
     DEBUG_PRINTLN(minute());
-    sendPing();
+    sendPowerup();
   }
 
   DEBUG_PRINT(hour());
@@ -112,6 +117,20 @@ void setup() {
     DEBUG_PRINT(" : ");
     DEBUG_PRINTLN(minute());
     sendPing();
+  }
+
+  // Check if awaken from night time.
+  if (rtcData.sleeping == 1) {
+    DEBUG_PRINTLN("Awaken from night-time sleep");
+    connectToWiFi();
+    rtcData.unixTime = getTime();
+    rtcData.unixTimeRemainder = 0;
+    setTime(rtcData.unixTime);
+    DEBUG_PRINT(hour());
+    DEBUG_PRINT(" : ");
+    DEBUG_PRINTLN(minute());
+    sendPing();
+    rtcData.sleeping = 0;
   }
 
   // Turn on RFID
