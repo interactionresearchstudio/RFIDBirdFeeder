@@ -21,8 +21,8 @@ RFID::RFID(float version)
 
   //set shd low to prepare for reading
   digitalWrite(shd, HIGH);
-  //   digitalWrite(mod, LOW);
-//  digitalWrite(shd, LOW);
+//  digitalWrite(mod, LOW);
+  digitalWrite(shd, LOW);
 }
 
 //Manchester decode. Supply the function an array to store the tags ID in

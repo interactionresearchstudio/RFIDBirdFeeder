@@ -27,7 +27,7 @@
 
 // CONFIG DEFINES
 #define WLAN_SSID "IRS Wireless"
-#define WLAN_PASS "xxxxxxxxxx"
+#define WLAN_PASS "xxxxxxx"
 #define HOST "http://feedernet.herokuapp.com"
 #define FEEDERSTUB "TestFeeder"
 #define HTTP_TIMEOUT 5000
@@ -91,6 +91,7 @@ void setup() {
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(second());
 
+  // Night time
   if (hour() >= NIGHT_START && hour() <= 23) {
     DEBUG_PRINTLN("Night time detected.");
     updateNightTime(); 
@@ -100,6 +101,7 @@ void setup() {
     updateNightTime(); 
   }
 
+  // Time sync before sleep
   if (hour() == NIGHT_START-1 && minute() == 40) {
     DEBUG_PRINTLN("Getting time before sleep...");
     connectToWiFi();
@@ -118,6 +120,5 @@ void setup() {
 
 void loop() {
   updateRfid();
-  delay(30);
   updateSleep();
 }

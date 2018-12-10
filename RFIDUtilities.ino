@@ -20,6 +20,6 @@ void updateRfid() {
     DEBUG_PRINT("\n\r");//return character for next line
     connectToWiFi();
     postTrack(rfid);
+    digitalWrite(14, 0);
   }
-  digitalWrite(14, 0);
 }
