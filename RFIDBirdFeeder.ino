@@ -26,8 +26,8 @@
 #endif
 
 // CONFIG DEFINES
-#define WLAN_SSID "piNet"
-#define WLAN_PASS "xxxxxxxx"
+#define WLAN_SSID "xxxxxxx"
+#define WLAN_PASS "xxxxxxx"
 #define HOST "http://feedernet.herokuapp.com"
 #define FEEDERSTUB "Feeder19"
 #define HTTP_TIMEOUT 5000

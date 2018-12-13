@@ -94,6 +94,7 @@ void prepareForSleep() {
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
   sendPing();
+  syncCache();
 }
 
 // Post-sleep event

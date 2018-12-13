@@ -90,11 +90,34 @@ void postTrack(String rfid) {
   }
 }
 
+// Send tracking event to server, with local time.
+int postCachedTrack(String rfid, String datetime) {
+  const size_t bufferSize = JSON_OBJECT_SIZE(3);
+  DynamicJsonBuffer jsonBuffer(bufferSize);
+
+  JsonObject& root = jsonBuffer.createObject();
+  root["datetime"] = datetime;
+  root["rfid"] = rfid;
+  root["stub"] = FEEDERSTUB;
+
+  String payload;
+  root.printTo(payload);
+  DEBUG_PRINT("Payload: ");
+  DEBUG_PRINTLN(payload);
+  DEBUG_PRINTLN("Posting track...");
+  int httpCode;
+  String res = postRequest("/api/recordTrack", payload, &httpCode);
+  if (httpCode == -1 || httpCode == 404) {
+    DEBUG_PRINTLN("Cached Post request failed.");
+  }
+  return httpCode;
+}
+
 // Send ping to server
 void sendPing() {
   const size_t bufferSize = JSON_OBJECT_SIZE(1);
   DynamicJsonBuffer jsonBuffer(bufferSize);
-  
+
   JsonObject& root = jsonBuffer.createObject();
   root["stub"] = FEEDERSTUB;
 
@@ -113,7 +136,7 @@ void sendPing() {
 void sendPowerup() {
   const size_t bufferSize = JSON_OBJECT_SIZE(2);
   DynamicJsonBuffer jsonBuffer(bufferSize);
-  
+
   JsonObject& root = jsonBuffer.createObject();
   root["stub"] = FEEDERSTUB;
   root["type"] = "powerup";
@@ -128,3 +151,32 @@ void sendPowerup() {
   DEBUG_PRINTLN("Result: ");
   DEBUG_PRINTLN(res);
 }
+
+// Offload cached readings to server
+void syncCache() {
+  // Loop through cache array
+  for (int j = 0; j < 4; j++) {
+    int numOfZeros = 0;
+    String rfid;
+    for (int i = 0; i < 5; i++) {
+      if (rtcData.cachedTags[j][i] == 0) {
+        numOfZeros++;
+      }
+      rfid += String(rtcData.cachedTags[j][i], HEX);
+    }
+
+    // If tag is non-empty, send it to the server.
+    if (numOfZeros < 5) {
+      int httpCode = postCachedTrack(rfid, String(rtcData.cachedTimes[j]));
+      if (httpCode == 200) {
+        DEBUG_PRINTLN("Posted cached tag.");
+        for(int i=0; i<5; i++) rtcData.cachedTags[j][i] = 0;
+        rtcData.cachedTimes[j] = 0;
+        rtcData.numOfCachedTags--;
+      }
+      else DEBUG_PRINTLN("Could not post cached tag. Leaving it there.");
+      delay(1000);
+    }
+  }
+}
+
