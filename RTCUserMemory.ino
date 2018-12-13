@@ -58,3 +58,40 @@ void updateCRC32() {
 boolean isRTCValid() {
   return rtcValid;
 }
+
+// Cache tag within RTC memory if HTTP request fails.
+void cacheTag(uint8_t tag[]) {
+  if (rtcData.numOfCachedTags < 4) {
+
+    // Find an empty slot
+    int cacheIndex = -1;
+    for (int j = 0; j < 4; j++) {
+      int numOfZeros = 0;
+      for (int i = 0; i < 5; i++) {
+        if (rtcData.cachedTags[j][i] == 0) {
+          numOfZeros++;
+        }
+        if (numOfZeros == 5) {
+          cacheIndex = j;
+          break;
+        }
+      }
+      if (cacheIndex != -1) {
+        break;
+      }
+    }
+
+    // Save tag
+    if (cacheIndex >= 0 && cacheIndex < 4) {
+      for (int i = 0; i < 5; i++) {
+        rtcData.cachedTags[cacheIndex][i] = tag[i];
+      }
+      rtcData.cachedTimes[cacheIndex] = now();
+      rtcData.numOfCachedTags++;
+      DEBUG_PRINTLN("Saved tag to empty slot.");
+    }
+  }
+  else {
+    DEBUG_PRINTLN("Cached slots full. Can't cache tag.");
+  }
+}

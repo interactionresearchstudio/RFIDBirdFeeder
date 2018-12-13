@@ -84,8 +84,10 @@ void postTrack(String rfid) {
   DEBUG_PRINTLN("Posting track...");
   int httpCode;
   String res = postRequest("/api/recordTrack", payload, &httpCode);
-  DEBUG_PRINTLN("Result: ");
-  DEBUG_PRINTLN(res);
+  if (httpCode == -1 || httpCode == 404) {
+    DEBUG_PRINTLN("Post request failed. Caching track...");
+    cacheTag(tagData);
+  }
 }
 
 // Send ping to server

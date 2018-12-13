@@ -1,5 +1,4 @@
-
-// Update sleep interval
+// Main daytime routine
 void updateSleep() {
   if (millis() >= WAKE_INTERVAL) {
 
@@ -9,6 +8,7 @@ void updateSleep() {
   }
 }
 
+// Main night-time routine
 void updateNightTime() {
   // Check if it's one hour before wake-up
   rtcData.sleeping = 1;
@@ -28,16 +28,12 @@ void updateNightTime() {
   ESP.deepSleep(NIGHT_SLEEP_INTERVAL * 1000);
 }
 
+// Update timekeeping (internally)
 void updateTime(uint32_t sleepInterval) {
   rtcData.unixTimeRemainder += (millis() + sleepInterval);
-
-  if (rtcData.unixTimeRemainder % 1000 == 0) {
-    // Rounded second. Time to add!
-    DEBUG_PRINTLN("Time rounded to the second.");
-    rtcData.unixTime += rtcData.unixTimeRemainder / 1000;
-    rtcData.unixTimeRemainder = 0;
-  }
-
+  uint16_t modulo = rtcData.unixTimeRemainder % 1000;
+  rtcData.unixTime += (rtcData.unixTimeRemainder - modulo) / 1000;
+  rtcData.unixTimeRemainder = modulo;
   DEBUG_PRINT("Time remainder: ");
   DEBUG_PRINTLN(rtcData.unixTimeRemainder);
 }
@@ -46,6 +42,7 @@ time_t getUnixTime() {
   return rtcData.unixTime + ((rtcData.unixTimeRemainder + millis()) / 1000);
 }
 
+// Powerup event
 void powerup() {
   DEBUG_PRINTLN("Reset from Powerup. Getting time...");
   connectToWiFi();
@@ -63,6 +60,13 @@ void powerup() {
 
   // Clear previous tags
   for (int i = 0; i < 5; i++) rtcData.previousTag[i] = 0;
+  for (int j = 0; j < 4; j++) {
+    for (int i = 0; i < 5; i++) {
+      rtcData.cachedTags[j][i] = 0;
+    }
+    rtcData.cachedTimes[j] = 0;
+  }
+  rtcData.numOfCachedTags = 0;
   setTime(rtcData.unixTime);
   rtcData.previousTagTime = now() - 60;
   DEBUG_PRINT(hour());
@@ -71,6 +75,7 @@ void powerup() {
   sendPowerup();
 }
 
+// Pre-sleep event
 void prepareForSleep() {
   DEBUG_PRINTLN("Getting time before sleep...");
   connectToWiFi();
@@ -91,6 +96,7 @@ void prepareForSleep() {
   sendPing();
 }
 
+// Post-sleep event
 void prepareForDaytime() {
   DEBUG_PRINTLN("Awaken from night-time sleep");
   connectToWiFi();
@@ -114,6 +120,7 @@ void prepareForDaytime() {
   rtcData.sleeping = 0;
 }
 
+// Try to resync time with server in the event of a time error.
 void resyncTime() {
   DEBUG_PRINTLN("Resyncing time...");
   connectToWiFi();

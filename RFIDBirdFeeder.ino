@@ -54,7 +54,9 @@ struct {
   uint8_t sleeping;
   uint32_t previousTagTime;
   uint8_t timeError;
-  uint8_t rtcBuffer;
+  uint8_t cachedTags[4][5];
+  uint32_t cachedTimes[4];
+  uint8_t numOfCachedTags;
 } rtcData;
 
 long prevMills;
