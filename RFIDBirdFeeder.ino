@@ -26,10 +26,10 @@
 #endif
 
 // CONFIG DEFINES
-#define WLAN_SSID "IRS Wireless"
-#define WLAN_PASS "xxxxxxx"
+#define WLAN_SSID "piNet"
+#define WLAN_PASS "xxxxxxxx"
 #define HOST "http://feedernet.herokuapp.com"
-#define FEEDERSTUB "StudioTestFeeder11"
+#define FEEDERSTUB "Feeder19"
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 2200
 #define WAKE_INTERVAL 400
@@ -39,6 +39,7 @@
 #define NIGHT_START 17
 #define NIGHT_END 6
 #define TAG_DEBOUNCE 60
+#define TIME_RESYNC_INTERVAL 3600
 
 RFID rfidModule(1.1);
 
@@ -52,7 +53,8 @@ struct {
   uint8_t previousTag[5];
   uint8_t sleeping;
   uint32_t previousTagTime;
-  uint8_t rtcBuffer[2];
+  uint8_t timeError;
+  uint8_t rtcBuffer;
 } rtcData;
 
 long prevMills;
@@ -78,17 +80,7 @@ void setup() {
   setTime(getUnixTime());
 
   if (ESP.getResetReason() != "Deep-Sleep Wake") {
-    DEBUG_PRINTLN("Reset from Powerup. Getting time...");
-    connectToWiFi();
-    rtcData.unixTime = getTime();
-    rtcData.unixTimeRemainder = 0;
-    for (int i=0; i<5; i++) rtcData.previousTag[i] = 0;
-    setTime(rtcData.unixTime);
-    rtcData.previousTagTime = now() - 60;
-    DEBUG_PRINT(hour());
-    DEBUG_PRINT(" : ");
-    DEBUG_PRINTLN(minute());
-    sendPowerup();
+    powerup();
   }
 
   DEBUG_PRINT(hour());
@@ -109,29 +101,20 @@ void setup() {
 
   // Time sync before sleep
   if (hour() == NIGHT_START-1 && minute() == 45) {
-    DEBUG_PRINTLN("Getting time before sleep...");
-    connectToWiFi();
-    rtcData.unixTime = getTime();
-    rtcData.unixTimeRemainder = 0;
-    setTime(rtcData.unixTime);
-    DEBUG_PRINT(hour());
-    DEBUG_PRINT(" : ");
-    DEBUG_PRINTLN(minute());
-    sendPing();
+    prepareForSleep();
   }
 
   // Check if awaken from night time.
   if (rtcData.sleeping == 1) {
-    DEBUG_PRINTLN("Awaken from night-time sleep");
-    connectToWiFi();
-    rtcData.unixTime = getTime();
-    rtcData.unixTimeRemainder = 0;
-    setTime(rtcData.unixTime);
-    DEBUG_PRINT(hour());
-    DEBUG_PRINT(" : ");
-    DEBUG_PRINTLN(minute());
-    sendPing();
-    rtcData.sleeping = 0;
+    prepareForDaytime();
+  }
+
+  // Check if time error exists
+  if (rtcData.timeError == 1) {
+    // If time is greater than 0 and is close to the resync interval, try to resync.
+    if (now() > 0 && now() % TIME_RESYNC_INTERVAL > 0 && now() % TIME_RESYNC_INTERVAL < 30) {
+      resyncTime();
+    }
   }
 
   // Turn on RFID
