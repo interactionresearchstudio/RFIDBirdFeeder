@@ -27,16 +27,16 @@
 
 // CONFIG DEFINES
 #define WLAN_SSID "IRS Wireless"
-#define WLAN_PASS "xxxxxxxx"
+#define WLAN_PASS "xxxxxxx"
 #define HOST "http://feedernet.herokuapp.com"
-#define FEEDERSTUB "StudioTestFeeder"
+#define FEEDERSTUB "StudioTestFeeder11"
 #define HTTP_TIMEOUT 5000
-#define SLEEP_INTERVAL 1700
-#define WAKE_INTERVAL 300
-#define NIGHT_SLEEP_INTERVAL 1800000
+#define SLEEP_INTERVAL 2200
+#define WAKE_INTERVAL 400
+#define NIGHT_SLEEP_INTERVAL 24000
 #define WIFI_QUICK_MAX_RETRIES 100
 #define WIFI_REGULAR_MAX_RETRIES 600
-#define NIGHT_START 18
+#define NIGHT_START 17
 #define NIGHT_END 6
 #define TAG_DEBOUNCE 60
 
@@ -108,7 +108,7 @@ void setup() {
   }
 
   // Time sync before sleep
-  if (hour() == NIGHT_START-1 && minute() == 40) {
+  if (hour() == NIGHT_START-1 && minute() == 45) {
     DEBUG_PRINTLN("Getting time before sleep...");
     connectToWiFi();
     rtcData.unixTime = getTime();
