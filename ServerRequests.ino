@@ -55,7 +55,7 @@ unsigned long getTime() {
   DynamicJsonBuffer jsonBuffer(bufferSize);
   int httpCode;
   String timeJson = getRequest("/api/time", &httpCode);
-  if (httpCode == -1 || httpCode == 404) {
+  if (httpCode != 200) {
     DEBUG_PRINTLN("Could not retrieve time from server.");
     return 0;
   }
@@ -84,7 +84,7 @@ void postTrack(String rfid) {
   DEBUG_PRINTLN("Posting track...");
   int httpCode;
   String res = postRequest("/api/recordTrack", payload, &httpCode);
-  if (httpCode == -1 || httpCode == 404) {
+  if (httpCode != 200) {
     DEBUG_PRINTLN("Post request failed. Caching track...");
     cacheTag(tagData);
   }
@@ -107,7 +107,7 @@ int postCachedTrack(String rfid, String datetime) {
   DEBUG_PRINTLN("Posting track...");
   int httpCode;
   String res = postRequest("/api/recordTrack", payload, &httpCode);
-  if (httpCode == -1 || httpCode == 404) {
+  if (httpCode != 200) {
     DEBUG_PRINTLN("Cached Post request failed.");
   }
   return httpCode;
