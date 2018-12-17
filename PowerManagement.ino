@@ -4,7 +4,7 @@ void updateSleep() {
 
     updateTime(SLEEP_INTERVAL);
     writeRTCData();
-    ESP.deepSleep(SLEEP_INTERVAL * 1000);
+    ESP.deepSleepInstant(SLEEP_INTERVAL * 1000);
   }
 }
 
@@ -25,7 +25,7 @@ void updateNightTime() {
   }
   updateTime(NIGHT_SLEEP_INTERVAL);
   writeRTCData();
-  ESP.deepSleep(NIGHT_SLEEP_INTERVAL * 1000);
+  ESP.deepSleepInstant(NIGHT_SLEEP_INTERVAL * 1000);
 }
 
 // Update timekeeping (internally)

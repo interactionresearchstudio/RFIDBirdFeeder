@@ -15,7 +15,6 @@ RFID::RFID(float version)
   rdyClk = 12;
   //set pin modes on RFID pins
   pinMode(shd, OUTPUT);
-  // pinMode(mod, OUTPUT);
   pinMode(demodOut, INPUT);
   pinMode(rdyClk, INPUT);
 

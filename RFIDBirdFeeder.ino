@@ -29,7 +29,7 @@
 #define WLAN_SSID "xxxxxxx"
 #define WLAN_PASS "xxxxxxx"
 #define HOST "http://feedernet.herokuapp.com"
-#define FEEDERSTUB "Feeder19"
+#define FEEDERSTUB "FeederXX"
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 2200
 #define WAKE_INTERVAL 400

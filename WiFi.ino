@@ -5,7 +5,7 @@ void connectToWiFi() {
     DEBUG_PRINT("Performing quick connect. Channel: ");
     DEBUG_PRINT(rtcData.channel);
     DEBUG_PRINT(" | BSSID: ");
-    for(int i=0; i<6; i++) DEBUG_PRINT(rtcData.bssid[i]);
+    for (int i = 0; i < 6; i++) DEBUG_PRINT(rtcData.bssid[i]);
     DEBUG_PRINTLN();
     WiFi.begin(WLAN_SSID, WLAN_PASS, rtcData.channel, rtcData.bssid, true);
   }
@@ -15,7 +15,7 @@ void connectToWiFi() {
   }
 
   int retries = 0;
-  while(WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED) {
     retries++;
     DEBUG_PRINT("Attempt ");
     DEBUG_PRINTLN(retries);
@@ -33,6 +33,7 @@ void connectToWiFi() {
     if (retries == WIFI_REGULAR_MAX_RETRIES) {
       DEBUG_PRINTLN("Giving up on WiFi...");
       WiFi.disconnect(true);
+      WiFi.forceSleepBegin();
       delay(1);
       WiFi.mode(WIFI_OFF);
       return;
