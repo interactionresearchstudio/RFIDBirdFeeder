@@ -40,6 +40,7 @@
 #define NIGHT_END 6
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
+#define VERSION "v1.0"
 
 RFID rfidModule(1.1);
 
