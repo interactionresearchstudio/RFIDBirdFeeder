@@ -73,6 +73,7 @@ void powerup() {
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
   sendPowerup();
+  checkForUpdate();
 }
 
 // Pre-sleep event
@@ -145,4 +146,3 @@ void resyncTime() {
   sendPing();
   rtcData.sleeping = 0;
 }
-

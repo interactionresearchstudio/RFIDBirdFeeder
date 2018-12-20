@@ -1,6 +1,7 @@
 // Libraries
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
+#include <ESP8266httpUpdate.h>
 #include <ArduinoJson.h>
 #include <TimeLib.h>
 #include "naturewatch_RFID.h"
@@ -26,8 +27,8 @@
 #endif
 
 // CONFIG DEFINES
-#define WLAN_SSID "xxxxxxx"
-#define WLAN_PASS "xxxxxxx"
+#define WLAN_SSID "xxxxxxxxx"
+#define WLAN_PASS "xxxxxxxxx"
 #define HOST "http://feedernet.herokuapp.com"
 #define FEEDERSTUB "FeederXX"
 #define HTTP_TIMEOUT 5000
@@ -75,7 +76,8 @@ void setup() {
 #ifdef DEBUG
   Serial.begin(115200);
 #endif
-  DEBUG_PRINTLN("Start up");
+  DEBUG_PRINTLN(" ");
+  DEBUG_PRINTLN(VERSION);
   DEBUG_PRINT("Reset reason: ");
   DEBUG_PRINTLN(ESP.getResetReason());
 
