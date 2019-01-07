@@ -7,7 +7,7 @@ String getRequest(char* endpoint, int *httpCode, byte maxRetries) {
   *httpCode = http.GET();
 
   String payload;
-  if (*httpCode != 200) {
+  if (*httpCode == 200) {
     DEBUG_PRINT("HTTP code: ");
     DEBUG_PRINTLN(*httpCode);
 
@@ -36,7 +36,7 @@ String postRequest(char* endpoint, String request, int *httpCode, byte maxRetrie
   *httpCode = http.POST(request);
 
   String result;
-  if (*httpCode != 200) {
+  if (*httpCode == 200) {
     DEBUG_PRINT("HTTP code: ");
     DEBUG_PRINTLN(*httpCode);
 

@@ -10,8 +10,15 @@ void updateRfid() {
     String rfid;
     for (int n = 0; n < 5; n++)
     {
-      DEBUG_PRINTHEX(tagData[n]); //print the byte in Decimal format
-      rfid += String(tagData[n], HEX);
+      if (tagData[n] < 0x10) {
+        DEBUG_PRINTHEX(0); //print the byte in Decimal format
+        DEBUG_PRINTHEX(tagData[n]); //print the byte in Decimal format
+        rfid += String("0");
+        rfid += String(tagData[n], HEX);
+      } else {
+        DEBUG_PRINTHEX(tagData[n]); //print the byte in Decimal format
+        rfid += String(tagData[n], HEX);
+      }
       if (n < 4) //only print the comma on the first 4 nunbers
       {
         DEBUG_PRINT(",");
