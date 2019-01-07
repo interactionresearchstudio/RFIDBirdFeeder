@@ -168,7 +168,12 @@ void syncCache() {
       if (rtcData.cachedTags[j][i] == 0) {
         numOfZeros++;
       }
-      rfid += String(rtcData.cachedTags[j][i], HEX);
+      if (rtcData.cachedTags[j][i] < 0x10) {
+        rfid += String(0);
+        rfid += String(rtcData.cachedTags[j][i], HEX);
+      } else {
+        rfid += String(rtcData.cachedTags[j][i], HEX);
+      }
     }
 
     // If tag is non-empty, send it to the server.
