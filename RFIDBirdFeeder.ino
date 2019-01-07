@@ -42,7 +42,7 @@ String FEEDERSTUB = " ";
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
 #define REQUEST_RETRIES 2
-#define VERSION "v1.0"
+#define VERSION "v1.1"
 
 RFID rfidModule(1.1);
 
