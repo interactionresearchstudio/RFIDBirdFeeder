@@ -7,20 +7,17 @@ String getRequest(char* endpoint, int *httpCode, byte maxRetries) {
   *httpCode = http.GET();
 
   String payload;
-  if (*httpCode == 200) {
+  if (*httpCode == HTTP_CODE_OK) {
     DEBUG_PRINT("HTTP code: ");
     DEBUG_PRINTLN(*httpCode);
-
-    if (*httpCode == HTTP_CODE_OK) {
-      payload = http.getString();
-      DEBUG_PRINTLN(payload);
-      return payload;
-    }
+    payload = http.getString();
+    DEBUG_PRINTLN(payload);
+    return payload;
   }
   else {
     DEBUG_PRINT("HTTP GET failed. Code: ");
     DEBUG_PRINTLN(*httpCode);
-    if (maxRetries > 0) {
+    if (maxRetries > 0 && *httpCode < 0) {
       getRequest(endpoint, httpCode, maxRetries--);
     }
   }
@@ -39,17 +36,14 @@ String postRequest(char* endpoint, String request, int *httpCode, byte maxRetrie
   if (*httpCode == 200) {
     DEBUG_PRINT("HTTP code: ");
     DEBUG_PRINTLN(*httpCode);
-
-    if (*httpCode == HTTP_CODE_OK) {
-      result = http.getString();
-      DEBUG_PRINTLN(result);
-      return result;
-    }
+    result = http.getString();
+    DEBUG_PRINTLN(result);
+    return result;
   }
   else {
     DEBUG_PRINT("HTTP POST failed. Code: ");
     DEBUG_PRINTLN(*httpCode);
-    if (maxRetries > 0) {
+    if (maxRetries > 0 && *httpCode < 0) {
       postRequest(endpoint, request, httpCode, maxRetries--);
     }
   }

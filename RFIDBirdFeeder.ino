@@ -27,8 +27,8 @@
 #endif
 
 // CONFIG DEFINES
-#define WLAN_SSID "xxxxxxxxx"
-#define WLAN_PASS "xxxxxxxxx"
+#define WLAN_SSID "XXXXXXXXXX"
+#define WLAN_PASS "XXXXXXXXXX"
 #define HOST "http://feedernet.herokuapp.com"
 String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
@@ -79,7 +79,9 @@ void setup() {
   Serial.begin(115200);
 #endif
   DEBUG_PRINTLN(" ");
-  DEBUG_PRINTLN(VERSION);
+  DEBUG_PRINT(VERSION);
+  DEBUG_PRINT(" | MAC: ");
+  DEBUG_PRINTLN(FEEDERSTUB);
   DEBUG_PRINT("Reset reason: ");
   DEBUG_PRINTLN(ESP.getResetReason());
 
