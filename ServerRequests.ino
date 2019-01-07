@@ -1,5 +1,5 @@
 // Basic GET request.
-String getRequest(char* endpoint, int *httpCode) {
+String getRequest(char* endpoint, int *httpCode, byte maxRetries) {
   HTTPClient http;
   // Connect to host
   http.begin(String(HOST) + String(endpoint));
@@ -7,7 +7,7 @@ String getRequest(char* endpoint, int *httpCode) {
   *httpCode = http.GET();
 
   String payload;
-  if (httpCode > 0) {
+  if (*httpCode != 200) {
     DEBUG_PRINT("HTTP code: ");
     DEBUG_PRINTLN(*httpCode);
 
@@ -20,11 +20,14 @@ String getRequest(char* endpoint, int *httpCode) {
   else {
     DEBUG_PRINT("HTTP GET failed. Code: ");
     DEBUG_PRINTLN(*httpCode);
+    if (maxRetries > 0) {
+      getRequest(endpoint, httpCode, maxRetries--);
+    }
   }
 }
 
 // Basic POST request.
-String postRequest(char* endpoint, String request, int *httpCode) {
+String postRequest(char* endpoint, String request, int *httpCode, byte maxRetries) {
   HTTPClient http;
 
   http.begin(String(HOST) + String(endpoint));
@@ -33,7 +36,7 @@ String postRequest(char* endpoint, String request, int *httpCode) {
   *httpCode = http.POST(request);
 
   String result;
-  if (*httpCode > 0) {
+  if (*httpCode != 200) {
     DEBUG_PRINT("HTTP code: ");
     DEBUG_PRINTLN(*httpCode);
 
@@ -46,6 +49,9 @@ String postRequest(char* endpoint, String request, int *httpCode) {
   else {
     DEBUG_PRINT("HTTP POST failed. Code: ");
     DEBUG_PRINTLN(*httpCode);
+    if (maxRetries > 0) {
+      postRequest(endpoint, request, httpCode, maxRetries--);
+    }
   }
 }
 
@@ -54,7 +60,7 @@ unsigned long getTime() {
   const size_t bufferSize = JSON_OBJECT_SIZE(1) + 20;
   DynamicJsonBuffer jsonBuffer(bufferSize);
   int httpCode;
-  String timeJson = getRequest("/api/time", &httpCode);
+  String timeJson = getRequest("/api/time", &httpCode, REQUEST_RETRIES);
   if (httpCode != 200) {
     DEBUG_PRINTLN("Could not retrieve time from server.");
     return 0;
@@ -83,7 +89,7 @@ void postTrack(String rfid) {
   DEBUG_PRINTLN(payload);
   DEBUG_PRINTLN("Posting track...");
   int httpCode;
-  String res = postRequest("/api/recordTrack", payload, &httpCode);
+  String res = postRequest("/api/recordTrack", payload, &httpCode, REQUEST_RETRIES);
   if (httpCode != 200) {
     DEBUG_PRINTLN("Post request failed. Caching track...");
     cacheTag(tagData);
@@ -106,7 +112,7 @@ int postCachedTrack(String rfid, String datetime) {
   DEBUG_PRINTLN(payload);
   DEBUG_PRINTLN("Posting track...");
   int httpCode;
-  String res = postRequest("/api/recordTrack", payload, &httpCode);
+  String res = postRequest("/api/recordTrack", payload, &httpCode, REQUEST_RETRIES);
   if (httpCode != 200) {
     DEBUG_PRINTLN("Cached Post request failed.");
   }
@@ -127,7 +133,7 @@ void sendPing() {
   DEBUG_PRINTLN(payload);
   DEBUG_PRINTLN("Sending Ping...");
   int httpCode;
-  String res = postRequest("/api/ping", payload, &httpCode);
+  String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
   DEBUG_PRINTLN("Result: ");
   DEBUG_PRINTLN(res);
 }
@@ -147,7 +153,7 @@ void sendPowerup() {
   DEBUG_PRINTLN(payload);
   DEBUG_PRINTLN("Sending Powerup Event...");
   int httpCode;
-  String res = postRequest("/api/ping", payload, &httpCode);
+  String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
   DEBUG_PRINTLN("Result: ");
   DEBUG_PRINTLN(res);
 }
@@ -182,7 +188,7 @@ void syncCache() {
 
 void checkForUpdate() {
   WiFiClient client;
-  
+
   ESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
 
   t_httpUpdate_return ret = ESPhttpUpdate.update(client, "http://feedernet.herokuapp.com/api/update", VERSION);

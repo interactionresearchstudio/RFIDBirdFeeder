@@ -30,10 +30,10 @@
 #define WLAN_SSID "xxxxxxxxx"
 #define WLAN_PASS "xxxxxxxxx"
 #define HOST "http://feedernet.herokuapp.com"
-#define FEEDERSTUB "FeederXX"
+String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
-#define SLEEP_INTERVAL 2200
-#define WAKE_INTERVAL 400
+#define SLEEP_INTERVAL 3800
+#define WAKE_INTERVAL 200
 #define NIGHT_SLEEP_INTERVAL 24000
 #define WIFI_QUICK_MAX_RETRIES 100
 #define WIFI_REGULAR_MAX_RETRIES 600
@@ -41,6 +41,7 @@
 #define NIGHT_END 6
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
+#define REQUEST_RETRIES 2
 #define VERSION "v1.0"
 
 RFID rfidModule(1.1);
@@ -71,6 +72,7 @@ boolean isNightTime = false;
 byte tagData[5];
 
 void setup() {
+  FEEDERSTUB = WiFi.macAddress();
   WiFi.mode(WIFI_OFF);
   digitalWrite(14, HIGH);
 #ifdef DEBUG
@@ -97,15 +99,15 @@ void setup() {
   // Night time
   if (hour() >= NIGHT_START && hour() <= 23) {
     DEBUG_PRINTLN("Night time detected.");
-    updateNightTime(); 
+    updateNightTime();
   }
   if (hour() >= 0 && hour() < NIGHT_END) {
     DEBUG_PRINTLN("Night time detected - past midnight");
-    updateNightTime(); 
+    updateNightTime();
   }
 
   // Time sync before sleep
-  if (hour() == NIGHT_START-1 && minute() == 45) {
+  if (hour() == NIGHT_START - 1 && minute() == 45) {
     prepareForSleep();
   }
 

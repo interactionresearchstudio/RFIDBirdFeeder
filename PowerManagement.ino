@@ -102,6 +102,7 @@ void prepareForSleep() {
 void prepareForDaytime() {
   DEBUG_PRINTLN("Awaken from night-time sleep");
   connectToWiFi();
+  checkForUpdate();
   uint32_t newTime;
   newTime = getTime();
   // If server time has failed, set time to NIGHT_END.
