@@ -1,52 +1,62 @@
 // Basic GET request.
 String getRequest(char* endpoint, int *httpCode, byte maxRetries) {
   HTTPClient http;
-  // Connect to host
-  http.begin(String(HOST) + String(endpoint));
+  
+  for (int i = 0; i < maxRetries; i++) {
+    http.begin(String(HOST) + String(endpoint));
 
-  *httpCode = http.GET();
+    *httpCode = http.GET();
 
-  String payload;
-  if (*httpCode == HTTP_CODE_OK) {
-    DEBUG_PRINT("HTTP code: ");
-    DEBUG_PRINTLN(*httpCode);
-    payload = http.getString();
-    DEBUG_PRINTLN(payload);
-    return payload;
-  }
-  else {
-    DEBUG_PRINT("HTTP GET failed. Code: ");
-    DEBUG_PRINTLN(*httpCode);
-    if (maxRetries > 0 && *httpCode < 0) {
-      getRequest(endpoint, httpCode, maxRetries--);
+    String payload;
+    if (*httpCode == HTTP_CODE_OK || *httpCode == 400) {
+      DEBUG_PRINT("HTTP code: ");
+      DEBUG_PRINTLN(*httpCode);
+      payload = http.getString();
+      DEBUG_PRINTLN(payload);
+      return payload;
+    }
+    else {
+      DEBUG_PRINT("HTTP GET failed. Code: ");
+      DEBUG_PRINTLN(*httpCode);
+      if (maxRetries > 0) {
+        DEBUG_PRINT("Retry #");
+        DEBUG_PRINTLN(i + 1);
+      }
     }
   }
+
+  return String("");
 }
 
 // Basic POST request.
 String postRequest(char* endpoint, String request, int *httpCode, byte maxRetries) {
   HTTPClient http;
 
-  http.begin(String(HOST) + String(endpoint));
-  http.addHeader("Content-Type", "application/json");
+  for (int i = 0; i < maxRetries; i++) {
+    http.begin(String(HOST) + String(endpoint));
+    http.addHeader("Content-Type", "application/json");
 
-  *httpCode = http.POST(request);
+    *httpCode = http.POST(request);
 
-  String result;
-  if (*httpCode == 200) {
-    DEBUG_PRINT("HTTP code: ");
-    DEBUG_PRINTLN(*httpCode);
-    result = http.getString();
-    DEBUG_PRINTLN(result);
-    return result;
-  }
-  else {
-    DEBUG_PRINT("HTTP POST failed. Code: ");
-    DEBUG_PRINTLN(*httpCode);
-    if (maxRetries > 0 && *httpCode < 0) {
-      postRequest(endpoint, request, httpCode, maxRetries--);
+    String result;
+    if (*httpCode == 200) {
+      DEBUG_PRINT("HTTP code: ");
+      DEBUG_PRINTLN(*httpCode);
+      result = http.getString();
+      DEBUG_PRINTLN(result);
+      return result;
+    }
+    else {
+      DEBUG_PRINT("HTTP POST failed. Code: ");
+      DEBUG_PRINTLN(*httpCode);
+      if (maxRetries > 0) {
+        DEBUG_PRINT("Retry #");
+        DEBUG_PRINTLN(i + 1);
+      }
     }
   }
+
+  return String("");
 }
 
 // Get Unix time from server.

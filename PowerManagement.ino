@@ -42,9 +42,21 @@ time_t getUnixTime() {
   return rtcData.unixTime + ((rtcData.unixTimeRemainder + millis()) / 1000);
 }
 
+// UART functions
+void updateUart() {
+  if (Serial.available() > 0) {
+    char inChar = Serial.read();
+    if (inChar == 'W') {
+      readCredentialsFromUart();
+    }
+  }
+}
+
 // Powerup event
 void powerup() {
-  DEBUG_PRINTLN("Reset from Powerup. Getting time...");
+  DEBUG_PRINTLN("Reset from Powerup. Press W to change WiFi credentials...");
+  delay(1500);
+  updateUart();
   connectToWiFi();
   uint32_t newTime = getTime();
   // If server time has failed, set time to NIGHT_END.
