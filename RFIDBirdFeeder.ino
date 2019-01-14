@@ -33,8 +33,8 @@ char WLAN_PASS[32];
 #define HOST "http://feedernet.herokuapp.com"
 String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
-#define SLEEP_INTERVAL 3800
-#define WAKE_INTERVAL 200
+#define SLEEP_INTERVAL 3000
+#define WAKE_INTERVAL 150
 #define NIGHT_SLEEP_INTERVAL 24000
 #define WIFI_QUICK_MAX_RETRIES 100
 #define WIFI_REGULAR_MAX_RETRIES 600
@@ -43,7 +43,7 @@ String FEEDERSTUB = " ";
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
 #define REQUEST_RETRIES 2
-#define VERSION "v1.2"
+#define VERSION "v1.3"
 
 RFID rfidModule(1.1);
 
