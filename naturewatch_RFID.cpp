@@ -20,7 +20,7 @@ RFID::RFID(float version)
 
   //set shd low to prepare for reading
   digitalWrite(shd, HIGH);
-//  digitalWrite(mod, LOW);
+  //  digitalWrite(mod, LOW);
   digitalWrite(shd, LOW);
 }
 
@@ -42,7 +42,7 @@ bool RFID::decodeTag(unsigned char *buf)
     while (0 == digitalRead(demodOut)) //watch for demodOut to go low
     {
 
-      if (timeCount >= TIMEOUT) //if we pass TIMEOUT milliseconds, break out of the loop
+      if (timeCount >= TIMEOUT) //if we pass TIMEOUT counter, break out of the loop
       {
         break;
       }
@@ -120,7 +120,12 @@ bool RFID::decodeTag(unsigned char *buf)
           }
         }
 
-        col_parity[0] = col_parity[1] = col_parity[2] = col_parity[3] = col_parity[4] = 0;
+        col_parity[0] = 0;
+        col_parity[1] = 0;
+        col_parity[2] = 0;
+        col_parity[3] = 0;
+        col_parity[4] = 0;
+
         for (row = 0; row < 11; row++)
         {
           row_parity = 0;
@@ -223,7 +228,7 @@ void RFID::transferToBuffer(byte *tagData, byte *tagDataBuffer)
 
 bool RFID::scanForTag(byte *tagData)
 {
-  static byte tagDataBuffer[5];      //A Buffer for verifying the tag data. 'static' so that the data is maintained the next time the loop is called
+  static byte tagDataBuffer[2][5];      //A Buffer for verifying the tag data. 'static' so that the data is maintained the next time the loop is called
   static int readCount = 0;          //the number of times a tag has been read. 'static' so that the data is maintained the next time the loop is called
   boolean verifyRead = false; //true when a tag's ID matches a previous read, false otherwise
   boolean tagCheck = false;   //true when a tag has been read, false otherwise
@@ -232,21 +237,30 @@ bool RFID::scanForTag(byte *tagData)
   if (tagCheck == true) //if 'true' is returned from the decodetag function, a tag was succesfully scanned
   {
     readCount++;      //increase count since we've seen a tag
-
-    if (readCount == 1) //if have read a tag only one time, proceed
-    {
-      transferToBuffer(tagData, tagDataBuffer);  //place the data from the current tag read into the buffer for the next read
+    switch (readCount) {
+      default:
+        break;
+      case (1):
+        transferToBuffer(tagData, tagDataBuffer[0]);
+        break;
+      case (2):
+        transferToBuffer(tagData, tagDataBuffer[1]);
+        break;
     }
-
-    else if (readCount == 2) //if we see a tag a second time, proceed
-    {
-      verifyRead = compareTagData(tagData, tagDataBuffer); //run the checkBuffer function to compare the data in the buffer (the last read) with the data from the current read
-
-      if (verifyRead == true) //if a 'true' is returned by compareTagData, the current read matches the last read
+    if (readCount == 3) {
+      for (byte i = 0; i < 2; i++) {
+        verifyRead = compareTagData(tagData, tagDataBuffer[i]);
+        if (verifyRead == false) {
+          break;
+        }
+      }
+      if (verifyRead == true ) //if a 'true' is returned by compareTagData, the current read matches the last read
       {
         readCount = 0; //because a tag has been succesfully verified, reset the readCount to '0' for the next tag
         return true;
       }
+    } else {
+      return false;
     }
   }
   else
