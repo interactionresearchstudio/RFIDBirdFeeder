@@ -24,6 +24,19 @@ RFID::RFID(float version)
   digitalWrite(shd, LOW);
 }
 
+bool RFID::checkModule() {
+  static bool moduleOn;
+  if (digitalRead(rdyClk) == 1 && moduleOn == false) {
+    moduleOn = true;
+    return true;
+  }
+  else if (digitalRead(rdyClk) == 0 && moduleOn == false) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
 //Manchester decode. Supply the function an array to store the tags ID in
 bool RFID::decodeTag(unsigned char *buf)
 {

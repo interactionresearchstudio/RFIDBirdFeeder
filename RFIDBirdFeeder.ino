@@ -69,6 +69,7 @@ long prevMillsWifi;
 int intervalWifi = 10000;
 byte count = 0;
 boolean isNightTime = false;
+bool firstWifiConnect = false;
 
 byte tagData[5];
 
@@ -91,6 +92,7 @@ void setup() {
 
   if (ESP.getResetReason() != "Deep-Sleep Wake") {
     powerup();
+    firstWifiConnect = true;
   }
 
   DEBUG_PRINT(hour());
@@ -133,5 +135,6 @@ void setup() {
 
 void loop() {
   updateRfid();
+  checkBattery();
   updateSleep();
 }

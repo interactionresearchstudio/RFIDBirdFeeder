@@ -57,3 +57,7 @@ void updateRfid() {
   }
 }
 
+bool checkBattery() {
+  return rfidModule.checkModule();
+}
+

@@ -1,10 +1,22 @@
 // Main daytime routine
 void updateSleep() {
   if (millis() >= WAKE_INTERVAL) {
-
+    moduleLowPower();
     updateTime(SLEEP_INTERVAL);
     writeRTCData();
     ESP.deepSleepInstant(SLEEP_INTERVAL * 1000);
+  }
+}
+
+//Check if battery is too low to operate RFID module
+void moduleLowPower() {
+  if (checkBattery() == false && firstWifiConnect == false) {
+    DEBUG_PRINTLN("Battery too low to operate RFID module");
+    connectToWiFi();
+    postTrack("0123456789");
+    while (1) {
+      yield();
+    }
   }
 }
 
@@ -54,6 +66,7 @@ void updateUart() {
 
 // Powerup event
 void powerup() {
+
   DEBUG_PRINTLN("Reset from Powerup. Press W to change WiFi credentials...");
   delay(1500);
   updateUart();
