@@ -76,10 +76,6 @@ int intervalWifi = 10000;
 byte count = 0;
 boolean isNightTime = false;
 
-//int NIGHT_START_HOUR = 17;
-//int NIGHT_END_HOUR = 7;
-//int NIGHT_START_MINUTE = 00;
-//int NIGHT_END_MINUTE = 00;
 
 const char* lat = "";
 const char* lon = "";
@@ -116,7 +112,6 @@ void setup() {
   // Night time
   if (hour() >= rtcData.NIGHT_START_HOUR && hour() <= 23) {
     DEBUG_PRINTLN("Night time detected.");
-    DEBUG_PRINTLN(rtcData.NIGHT_START_HOUR);
     updateNightTime();
   }
   if (hour() >= 0 && hour() < rtcData.NIGHT_END_HOUR) {
