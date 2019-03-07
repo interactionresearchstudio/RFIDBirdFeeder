@@ -117,3 +117,49 @@ void loadCredentials() {
   DEBUG_PRINT(WLAN_SSID);
   DEBUG_PRINTLN(strlen(WLAN_PASS) > 0 ? " | ********" : " | <no password>");
 }
+
+String getExternalIP()
+{
+  //"api.ipify.org", 80
+
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;  //Object of class HTTPClient
+    http.begin("http://api.ipify.org");
+    int httpCode = http.GET();
+    //Check the returning code
+    if (httpCode > 0) {
+      // Parsing
+      String out = http.getString();
+      DEBUG_PRINTLN(out);
+      return out;
+    }
+  } else {
+    return "NULL";
+  }
+}
+
+
+void getCoords() {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;  //Object of class HTTPClient
+    String coord = "http://ip-api.com/json/";
+    String IP = getExternalIP();
+    coord = coord + IP;
+    http.begin(coord);
+    int httpCode = http.GET();
+    //Check the returning code
+    if (httpCode > 0) {
+      // Parsing
+      const size_t bufferSize = 400;
+      DynamicJsonBuffer jsonBuffer(bufferSize);
+      JsonObject& root = jsonBuffer.parseObject(http.getString());
+      lat  = root["lat"];
+      lon = root["lon"];
+
+      DEBUG_PRINTLN(lat);
+      DEBUG_PRINTLN(lon);
+    }
+  }
+}
+
+
