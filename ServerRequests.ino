@@ -28,6 +28,34 @@ String getRequest(char* endpoint, int *httpCode, byte maxRetries) {
   return String("");
 }
 
+// Request data from LoRa base.
+String requestFromRadio(int destinationId, int originId, char command, String message, int timeout, int maxRetries) {
+  String payload = 
+    String(destinationId) + "," + 
+    String(originId) + "," +
+    command + "," +
+    message;
+
+  uint32_t checksum = calculateCRC32(payload, payload.length());
+
+  // Wait for command
+  for (int i=0; i < maxRetries; i++) {
+    boolean receivedReply;
+    unsigned long timeSent = millis();
+    lora.print(payload + "," + String(checksum) + 0x04);
+    while (!receivedReply) {
+      if (lora.available() > 0) {
+        // Handle incoming data
+        // Check if data is destined for this device.
+      }
+      if (millis() - timeSent >= maxRetries) {
+        DEBUG_PRINTLN("Waiting for LoRa reply timed out.");
+        break;
+      }
+    }
+  }
+}
+
 // Basic POST request.
 String postRequest(char* endpoint, String request, int *httpCode, byte maxRetries) {
   HTTPClient http;
@@ -204,15 +232,16 @@ void checkForUpdate() {
 
   switch (ret) {
     case HTTP_UPDATE_FAILED:
-      Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+      //Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+      DEBUG_PRINTLN("HTTP_UPDATE_FAILED Error");
       break;
 
     case HTTP_UPDATE_NO_UPDATES:
-      Serial.println("HTTP_UPDATE_NO_UPDATES");
+      DEBUG_PRINTLN("HTTP_UPDATE_NO_UPDATES");
       break;
 
     case HTTP_UPDATE_OK:
-      Serial.println("HTTP_UPDATE_OK");
+      DEBUG_PRINTLN("HTTP_UPDATE_OK");
       break;
   }
 }

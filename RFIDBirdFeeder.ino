@@ -10,6 +10,15 @@
 // DEBUG - uncomment for debug info via serial
 #define DEBUG
 
+// Uncomment to send data through LoRa module instead of WiFi.
+#define LORA
+
+// LoRa software serial
+#ifdef LORA
+#include <SoftwareSerial.h>
+SoftwareSerial lora = SoftwareSerial(4, 5);
+#endif
+
 // Debug print macros
 #ifdef DEBUG
 #define DEBUG_PRINTLN(x)  Serial.println(x)
