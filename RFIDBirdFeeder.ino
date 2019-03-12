@@ -19,6 +19,8 @@
 SoftwareSerial lora = SoftwareSerial(4, 5);
 #endif
 
+#define RADIOID 1
+
 // Debug print macros
 #ifdef DEBUG
 #define DEBUG_PRINTLN(x)  Serial.println(x)
@@ -94,6 +96,10 @@ void setup() {
   DEBUG_PRINTLN(FEEDERSTUB);
   DEBUG_PRINT("Reset reason: ");
   DEBUG_PRINTLN(ESP.getResetReason());
+
+#ifdef LORA
+  lora.begin(19200);
+#endif
 
   readRTCData();
   setTime(getUnixTime());

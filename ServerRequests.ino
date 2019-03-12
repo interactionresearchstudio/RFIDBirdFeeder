@@ -1,7 +1,7 @@
 // Basic GET request.
 String getRequest(char* endpoint, int *httpCode, byte maxRetries) {
   HTTPClient http;
-  
+
   for (int i = 0; i < maxRetries; i++) {
     http.begin(String(HOST) + String(endpoint));
 
@@ -30,30 +30,60 @@ String getRequest(char* endpoint, int *httpCode, byte maxRetries) {
 
 // Request data from LoRa base.
 String requestFromRadio(int destinationId, int originId, char command, String message, int timeout, int maxRetries) {
-  String payload = 
-    String(destinationId) + "," + 
+  String payload =
+    String(destinationId) + "," +
     String(originId) + "," +
     command + "," +
     message;
 
-  uint32_t checksum = calculateCRC32(payload, payload.length());
+  //uint32_t checksum = calculateCRC32(payload.toCharArray(), payload.length());
 
-  // Wait for command
-  for (int i=0; i < maxRetries; i++) {
-    boolean receivedReply;
-    unsigned long timeSent = millis();
-    lora.print(payload + "," + String(checksum) + 0x04);
-    while (!receivedReply) {
+  DEBUG_PRINTLN("Payload: " + payload);
+
+  boolean waitingForReply = true;
+  String packet;
+  unsigned long timeSent = millis();
+  lora.print(payload);
+  lora.write(0x04);
+
+  for (int i = 0; i < maxRetries; i++) {
+    // Wait for reply.
+    while (waitingForReply) {
       if (lora.available() > 0) {
-        // Handle incoming data
-        // Check if data is destined for this device.
+        char inChar = lora.read();
+        Serial.print(inChar);
+        if (inChar == 0x04) {
+          DEBUG_PRINTLN("Received packet " + packet);
+          if (isThisMyPacket(packet, RADIOID)) {
+            // Received my reply!
+            DEBUG_PRINTLN("Received packet " + packet + " for myself.");
+            return packet;
+          }
+          else {
+            // Not my packet. Clear packet and start listening again.
+            packet = "";
+          }
+        }
+        else packet += inChar;
       }
-      if (millis() - timeSent >= maxRetries) {
+      if (millis() - timeSent >= timeout) {
         DEBUG_PRINTLN("Waiting for LoRa reply timed out.");
-        break;
+        waitingForReply = false;
       }
+      delay(0);
     }
   }
+
+  // Return nothing if max retries have run their course.
+  return String("");
+}
+
+// Check if packet is destined for this feeder.
+boolean isThisMyPacket(String packet, int destinationId) {
+  int firstSeparator = packet.indexOf((char)',');
+  int packetDestination = packet.substring(0, firstSeparator).toInt();
+  if (packetDestination == destinationId) return true;
+  else return false;
 }
 
 // Basic POST request.
@@ -107,6 +137,10 @@ unsigned long getTime() {
 
 // Send tracking event to server.
 void postTrack(String rfid) {
+#ifdef LORA
+  requestFromRadio(100, RADIOID, 'R', rfid, 4000, 3);
+  //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
+#else
   const size_t bufferSize = JSON_OBJECT_SIZE(3);
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
@@ -126,6 +160,7 @@ void postTrack(String rfid) {
     DEBUG_PRINTLN("Post request failed. Caching track...");
     cacheTag(tagData);
   }
+#endif
 }
 
 // Send tracking event to server, with local time.
