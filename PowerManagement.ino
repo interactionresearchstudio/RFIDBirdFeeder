@@ -14,7 +14,9 @@ void updateNightTime() {
   rtcData.sleeping = 1;
   if (hour() == NIGHT_END - 1 && minute() == 45) {
     DEBUG_PRINTLN("Getting time before wake-up...");
+#ifndef LORA
     connectToWiFi();
+#endif
     uint32_t newTime = getTime();
     // Only save time if successfully retrieved from the server.
     if (rtcData.unixTime != 0) {
@@ -54,10 +56,12 @@ void updateUart() {
 
 // Powerup event
 void powerup() {
+#ifndef LORA
   DEBUG_PRINTLN("Reset from Powerup. Press W to change WiFi credentials...");
   delay(1500);
   updateUart();
   connectToWiFi();
+#endif
   uint32_t newTime = getTime();
   // If server time has failed, set time to NIGHT_END.
   if (newTime == 0) {
@@ -85,13 +89,17 @@ void powerup() {
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
   sendPowerup();
+#ifndef LORA
   checkForUpdate();
+#endif
 }
 
 // Pre-sleep event
 void prepareForSleep() {
   DEBUG_PRINTLN("Getting time before sleep...");
+#ifndef LORA
   connectToWiFi();
+#endif
   uint32_t newTime;
   newTime = getTime();
   if (newTime == 0) {
@@ -107,14 +115,18 @@ void prepareForSleep() {
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
   sendPing();
+#ifndef LORA
   syncCache();
+#endif
 }
 
 // Post-sleep event
 void prepareForDaytime() {
   DEBUG_PRINTLN("Awaken from night-time sleep");
+#ifndef LORA
   connectToWiFi();
   checkForUpdate();
+#endif
   uint32_t newTime;
   newTime = getTime();
   // If server time has failed, set time to NIGHT_END.
@@ -138,7 +150,9 @@ void prepareForDaytime() {
 // Try to resync time with server in the event of a time error.
 void resyncTime() {
   DEBUG_PRINTLN("Resyncing time...");
+#ifndef LORA
   connectToWiFi();
+#endif
   uint32_t newTime;
   newTime = getTime();
   // If server time has failed, set time to NIGHT_END.

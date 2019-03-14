@@ -17,9 +17,10 @@
 #ifdef LORA
 #include <SoftwareSerial.h>
 SoftwareSerial lora = SoftwareSerial(4, 5);
-#endif
-
+#define LORA_REQUEST_TIMEOUT 4000
+#define LORA_REQUEST_ATTEMPTS 3
 #define RADIOID 1
+#endif
 
 // Debug print macros
 #ifdef DEBUG

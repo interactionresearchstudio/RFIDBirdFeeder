@@ -119,6 +119,18 @@ String postRequest(char* endpoint, String request, int *httpCode, byte maxRetrie
 
 // Get Unix time from server.
 unsigned long getTime() {
+#ifdef LORA
+  String packet = requestFromRadio(100, RADIOID, 'T', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
+  if (packet != "") {
+    byte firstSeparator = packet.indexOf((char)',');
+    byte secondSeparator = packet.indexOf((char)',', firstSeparator + 1);
+    byte thirdSeparator = packet.indexOf((char)',', secondSeparator + 1);
+    String message = packet.substring(thirdSeparator + 1);
+    unsigned long currentTime = atol(message.c_str());
+    return currentTime;
+  }
+  else return 0;
+#else
   const size_t bufferSize = JSON_OBJECT_SIZE(1) + 20;
   DynamicJsonBuffer jsonBuffer(bufferSize);
   int httpCode;
@@ -133,12 +145,13 @@ unsigned long getTime() {
     return 0;
   }
   return root["time"];
+#endif
 }
 
 // Send tracking event to server.
 void postTrack(String rfid) {
 #ifdef LORA
-  requestFromRadio(100, RADIOID, 'R', rfid, 4000, 3);
+  requestFromRadio(100, RADIOID, 'R', rfid, LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
   //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
 #else
   const size_t bufferSize = JSON_OBJECT_SIZE(3);
@@ -188,6 +201,10 @@ int postCachedTrack(String rfid, String datetime) {
 
 // Send ping to server
 void sendPing() {
+#ifdef LORA
+  requestFromRadio(100, RADIOID, 'P', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
+  //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
+#else
   const size_t bufferSize = JSON_OBJECT_SIZE(1);
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
@@ -203,10 +220,15 @@ void sendPing() {
   String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
   DEBUG_PRINTLN("Result: ");
   DEBUG_PRINTLN(res);
+#endif
 }
 
 // Send powerup event to server
 void sendPowerup() {
+#ifdef LORA
+  requestFromRadio(100, RADIOID, 'U', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
+  //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
+#else
   const size_t bufferSize = JSON_OBJECT_SIZE(2);
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
@@ -223,6 +245,7 @@ void sendPowerup() {
   String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
   DEBUG_PRINTLN("Result: ");
   DEBUG_PRINTLN(res);
+#endif
 }
 
 // Offload cached readings to server
