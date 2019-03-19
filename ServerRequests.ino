@@ -98,7 +98,7 @@ String requestFromRadio(int destinationId, int originId, char command, String me
         DEBUG_PRINTLN("Waiting for LoRa reply timed out.");
         waitingForReply = false;
       }
-      delay(0);
+      delay(1);
     }
   }
 
@@ -309,20 +309,18 @@ void getSunriseSunset() {
     byte firstTimeSeparator = message.indexOf((char)':');
     byte secondTimeSeparator = message.indexOf((char)'-');
     byte thirdTimeSeparator = message.indexOf((char)':', secondTimeSeparator + 1);
-    if (firstTimeSeparator != 0 && secondTimeSeparator != 0 && thirdTimeSeparator != 0) {
-      DEBUG_PRINTLN("Received sunrise / sunset via radio.");
-      rtcData.NIGHT_START_HOUR = message.substring(secondTimeSeparator + 1, thirdTimeSeparator).toInt();
-      rtcData.NIGHT_START_MINUTE = message.substring(thirdTimeSeparator + 1).toInt();
-      rtcData.NIGHT_END_HOUR = message.substring(0, firstTimeSeparator).toInt();
-      rtcData.NIGHT_END_MINUTE = message.substring(firstTimeSeparator + 1, secondTimeSeparator).toInt();
-    }
-    else {
-      DEBUG_PRINTLN("Setting fallback sunrise / sunset.");
-      rtcData.NIGHT_START_HOUR = 18;
-      rtcData.NIGHT_START_MINUTE = 0;
-      rtcData.NIGHT_END_HOUR = 6;
-      rtcData.NIGHT_END_MINUTE = 0;
-    }
+    DEBUG_PRINTLN("Received sunrise / sunset via radio.");
+    rtcData.NIGHT_START_HOUR = message.substring(secondTimeSeparator + 1, thirdTimeSeparator).toInt();
+    rtcData.NIGHT_START_MINUTE = message.substring(thirdTimeSeparator + 1).toInt();
+    rtcData.NIGHT_END_HOUR = message.substring(0, firstTimeSeparator).toInt();
+    rtcData.NIGHT_END_MINUTE = message.substring(firstTimeSeparator + 1, secondTimeSeparator).toInt();
+  }
+  else {
+    DEBUG_PRINTLN("Setting fallback sunrise / sunset.");
+    rtcData.NIGHT_START_HOUR = 18;
+    rtcData.NIGHT_START_MINUTE = 0;
+    rtcData.NIGHT_END_HOUR = 6;
+    rtcData.NIGHT_END_MINUTE = 0;
   }
 #else
   const size_t bufferSize = JSON_OBJECT_SIZE(1);

@@ -78,6 +78,7 @@ void powerup() {
   updateUart();
   connectToWiFi();
 #endif
+  getSunriseSunset();
   uint32_t newTime = getTime();
   // If server time has failed, set time to NIGHT_END.
   if (newTime == 0) {
@@ -104,8 +105,7 @@ void powerup() {
   DEBUG_PRINT(hour());
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
-
-  getSunriseSunset();
+  
   sendPowerup();
 #ifndef LORA
   checkForUpdate();
@@ -147,6 +147,7 @@ void prepareForDaytime() {
   connectToWiFi();
   checkForUpdate();
 #endif
+  getSunriseSunset();
   uint32_t newTime;
   newTime = getTime();
   // If server time has failed, set time to NIGHT_END.
@@ -163,7 +164,6 @@ void prepareForDaytime() {
   DEBUG_PRINT(hour());
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
-  getSunriseSunset();
   sendPing();
   moduleLowPower();
   rtcData.sleeping = 0;
