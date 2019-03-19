@@ -1,10 +1,24 @@
 // Main daytime routine
 void updateSleep() {
   if (millis() >= WAKE_INTERVAL) {
-
     updateTime(SLEEP_INTERVAL);
     writeRTCData();
     ESP.deepSleepInstant(SLEEP_INTERVAL * 1000);
+  }
+}
+
+//Check if battery is too low to operate RFID module
+void moduleLowPower() {
+  unsigned long millisCount = millis();
+  digitalWrite(14, LOW);
+  while (millis() - millisCount < 1000) {
+    rfidModule.isModuleReady();
+  }
+  digitalWrite(14, HIGH);
+  if (rfidModule.isModuleReady() == false ) {
+    DEBUG_PRINTLN("Battery too low to operate RFID module");
+    connectToWiFi();
+    sendLowBattery();
   }
 }
 
@@ -12,7 +26,7 @@ void updateSleep() {
 void updateNightTime() {
   // Check if it's one hour before wake-up
   rtcData.sleeping = 1;
-  if (hour() == NIGHT_END - 1 && minute() == 45) {
+  if (hour() == rtcData.NIGHT_END_HOUR - 1 && minute() == 45) {
     DEBUG_PRINTLN("Getting time before wake-up...");
 #ifndef LORA
     connectToWiFi();
@@ -66,7 +80,7 @@ void powerup() {
   // If server time has failed, set time to NIGHT_END.
   if (newTime == 0) {
     DEBUG_PRINTLN("Setting time to epoch + NIGHT_END...");
-    rtcData.unixTime = NIGHT_END * 3600;
+    rtcData.unixTime = rtcData.NIGHT_END_HOUR * 3600;
     rtcData.timeError = 1;
   }
   else {
@@ -88,9 +102,12 @@ void powerup() {
   DEBUG_PRINT(hour());
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
+
+  getSunriseSunset();
   sendPowerup();
 #ifndef LORA
   checkForUpdate();
+  moduleLowPower();
 #endif
 }
 
@@ -116,6 +133,7 @@ void prepareForSleep() {
   DEBUG_PRINTLN(minute());
   sendPing();
 #ifndef LORA
+  moduleLowPower();
   syncCache();
 #endif
 }
@@ -132,7 +150,7 @@ void prepareForDaytime() {
   // If server time has failed, set time to NIGHT_END.
   if (newTime == 0) {
     DEBUG_PRINTLN("Setting time to epoch + NIGHT_END...");
-    rtcData.unixTime = NIGHT_END * 3600;
+    rtcData.unixTime = rtcData.NIGHT_END_HOUR * 3600;
     rtcData.timeError = 1;
   }
   else {
@@ -143,7 +161,9 @@ void prepareForDaytime() {
   DEBUG_PRINT(hour());
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
+  getSunriseSunset();
   sendPing();
+  moduleLowPower();
   rtcData.sleeping = 0;
 }
 
