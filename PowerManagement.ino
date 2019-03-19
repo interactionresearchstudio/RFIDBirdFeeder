@@ -26,7 +26,7 @@ void moduleLowPower() {
 void updateNightTime() {
   // Check if it's one hour before wake-up
   rtcData.sleeping = 1;
-  if (hour() == NIGHT_END - 1 && minute() == 45) {
+  if (hour() == rtcData.NIGHT_END_HOUR - 1 && minute() == 45) {
     DEBUG_PRINTLN("Getting time before wake-up...");
     connectToWiFi();
     uint32_t newTime = getTime();
@@ -77,7 +77,7 @@ void powerup() {
   // If server time has failed, set time to NIGHT_END.
   if (newTime == 0) {
     DEBUG_PRINTLN("Setting time to epoch + NIGHT_END...");
-    rtcData.unixTime = NIGHT_END * 3600;
+    rtcData.unixTime = rtcData.NIGHT_END_HOUR * 3600;
     rtcData.timeError = 1;
   }
   else {
@@ -99,6 +99,8 @@ void powerup() {
   DEBUG_PRINT(hour());
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
+
+  getSunriseSunset();
   sendPowerup();
   checkForUpdate();
   moduleLowPower();
@@ -137,7 +139,7 @@ void prepareForDaytime() {
   // If server time has failed, set time to NIGHT_END.
   if (newTime == 0) {
     DEBUG_PRINTLN("Setting time to epoch + NIGHT_END...");
-    rtcData.unixTime = NIGHT_END * 3600;
+    rtcData.unixTime = rtcData.NIGHT_END_HOUR * 3600;
     rtcData.timeError = 1;
   }
   else {
@@ -148,6 +150,7 @@ void prepareForDaytime() {
   DEBUG_PRINT(hour());
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
+  getSunriseSunset();
   sendPing();
   moduleLowPower();
   rtcData.sleeping = 0;

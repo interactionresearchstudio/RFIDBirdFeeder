@@ -27,10 +27,11 @@
 #define DEBUG_PRINTHEX(x)
 #endif
 
+
 // CONFIG DEFINES
 char WLAN_SSID[32];
 char WLAN_PASS[32];
-#define HOST "http://feedernet.herokuapp.com"
+#define HOST "http://feedernet-staging.herokuapp.com"
 String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 4000
@@ -38,8 +39,6 @@ String FEEDERSTUB = " ";
 #define NIGHT_SLEEP_INTERVAL 24000
 #define WIFI_QUICK_MAX_RETRIES 100
 #define WIFI_REGULAR_MAX_RETRIES 600
-#define NIGHT_START 17
-#define NIGHT_END 7
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
 #define REQUEST_RETRIES 2
@@ -61,6 +60,11 @@ struct {
   uint8_t cachedTags[4][5];
   uint32_t cachedTimes[4];
   uint8_t numOfCachedTags;
+  uint8_t NIGHT_START_HOUR;
+  uint8_t NIGHT_END_HOUR;
+  uint8_t NIGHT_START_MINUTE;
+  uint8_t NIGHT_END_MINUTE;
+
 } rtcData;
 
 long prevMills;
@@ -69,6 +73,10 @@ long prevMillsWifi;
 int intervalWifi = 10000;
 byte count = 0;
 boolean isNightTime = false;
+
+
+const char* lat = "";
+const char* lon = "";
 
 byte tagData[5];
 
@@ -100,17 +108,19 @@ void setup() {
   DEBUG_PRINTLN(second());
 
   // Night time
-  if (hour() >= NIGHT_START && hour() <= 23) {
+  if (hour() >= rtcData.NIGHT_START_HOUR && hour() <= 23) {
     DEBUG_PRINTLN("Night time detected.");
     updateNightTime();
   }
-  if (hour() >= 0 && hour() < NIGHT_END) {
+  if (hour() >= 0 && hour() < rtcData.NIGHT_END_HOUR) {
     DEBUG_PRINTLN("Night time detected - past midnight");
     updateNightTime();
   }
 
   // Time sync before sleep
-  if (hour() == NIGHT_START - 1 && minute() == 45) {
+  if (hour() == rtcData.NIGHT_START_HOUR && rtcData.NIGHT_START_MINUTE > 15 && minute() == rtcData.NIGHT_START_MINUTE - 15 ) {
+    prepareForSleep();
+  } else if (rtcData.NIGHT_START_MINUTE < 15 && hour() == rtcData.NIGHT_START_HOUR - 1 && minute() == rtcData.NIGHT_START_MINUTE + 45) {
     prepareForSleep();
   }
 
