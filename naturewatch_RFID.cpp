@@ -24,7 +24,7 @@ RFID::RFID(float version)
   digitalWrite(shd, LOW);
 }
 
-bool RFID::checkModule() {
+bool RFID::isModuleReady() {
   static bool moduleOn;
   if (digitalRead(rdyClk) == 1 && moduleOn == false) {
     moduleOn = true;

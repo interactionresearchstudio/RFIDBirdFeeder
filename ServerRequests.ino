@@ -1,7 +1,7 @@
 // Basic GET request.
 String getRequest(char* endpoint, int *httpCode, byte maxRetries) {
   HTTPClient http;
-  
+
   for (int i = 0; i < maxRetries; i++) {
     http.begin(String(HOST) + String(endpoint));
 
@@ -161,6 +161,27 @@ void sendPowerup() {
   DEBUG_PRINTLN("Result: ");
   DEBUG_PRINTLN(res);
 }
+
+// Send powerup event to server
+void sendLowBattery() {
+  const size_t bufferSize = JSON_OBJECT_SIZE(2);
+  DynamicJsonBuffer jsonBuffer(bufferSize);
+
+  JsonObject& root = jsonBuffer.createObject();
+  root["stub"] = FEEDERSTUB;
+  root["type"] = "lowbattery";
+
+  String payload;
+  root.printTo(payload);
+  DEBUG_PRINT("Payload: ");
+  DEBUG_PRINTLN(payload);
+  DEBUG_PRINTLN("Sending Low Battery Event...");
+  int httpCode;
+  String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
+  DEBUG_PRINTLN("Result: ");
+  DEBUG_PRINTLN(res);
+}
+
 
 // Offload cached readings to server
 void syncCache() {

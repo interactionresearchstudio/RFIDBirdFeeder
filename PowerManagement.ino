@@ -1,7 +1,6 @@
 // Main daytime routine
 void updateSleep() {
   if (millis() >= WAKE_INTERVAL) {
-    moduleLowPower();
     updateTime(SLEEP_INTERVAL);
     writeRTCData();
     ESP.deepSleepInstant(SLEEP_INTERVAL * 1000);
@@ -10,13 +9,16 @@ void updateSleep() {
 
 //Check if battery is too low to operate RFID module
 void moduleLowPower() {
-  if (checkBattery() == false && firstWifiConnect == false) {
+  unsigned long millisCount = millis();
+  digitalWrite(14, LOW);
+  while (millis() - millisCount < 1000) {
+    rfidModule.isModuleReady();
+  }
+  digitalWrite(14, HIGH);
+  if (rfidModule.isModuleReady() == false ) {
     DEBUG_PRINTLN("Battery too low to operate RFID module");
     connectToWiFi();
-    postTrack("0123456789");
-    while (1) {
-      yield();
-    }
+    sendLowBattery();
   }
 }
 
@@ -99,6 +101,7 @@ void powerup() {
   DEBUG_PRINTLN(minute());
   sendPowerup();
   checkForUpdate();
+  moduleLowPower();
 }
 
 // Pre-sleep event
@@ -120,6 +123,7 @@ void prepareForSleep() {
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
   sendPing();
+  moduleLowPower();
   syncCache();
 }
 
@@ -145,6 +149,7 @@ void prepareForDaytime() {
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
   sendPing();
+  moduleLowPower();
   rtcData.sleeping = 0;
 }
 

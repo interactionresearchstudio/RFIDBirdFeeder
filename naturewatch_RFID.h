@@ -24,7 +24,7 @@ class RFID
 
     bool scanForTag(byte *tagData);
 
-    bool checkModule();
+    bool isModuleReady();
 
 
   private:
