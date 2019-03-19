@@ -17,7 +17,9 @@ void moduleLowPower() {
   digitalWrite(14, HIGH);
   if (rfidModule.isModuleReady() == false ) {
     DEBUG_PRINTLN("Battery too low to operate RFID module");
+#ifndef LORA
     connectToWiFi();
+#endif
     sendLowBattery();
   }
 }
@@ -107,8 +109,8 @@ void powerup() {
   sendPowerup();
 #ifndef LORA
   checkForUpdate();
-  moduleLowPower();
 #endif
+  moduleLowPower();
 }
 
 // Pre-sleep event
@@ -133,9 +135,9 @@ void prepareForSleep() {
   DEBUG_PRINTLN(minute());
   sendPing();
 #ifndef LORA
-  moduleLowPower();
   syncCache();
 #endif
+  moduleLowPower();
 }
 
 // Post-sleep event

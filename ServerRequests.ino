@@ -28,64 +28,6 @@ String getRequest(char* endpoint, int *httpCode, byte maxRetries) {
   return String("");
 }
 
-// Request data from LoRa base.
-String requestFromRadio(int destinationId, int originId, char command, String message, int timeout, int maxRetries) {
-  String payload =
-    String(destinationId) + "," +
-    String(originId) + "," +
-    command + "," +
-    message;
-
-  //uint32_t checksum = calculateCRC32(payload.toCharArray(), payload.length());
-
-  DEBUG_PRINTLN("Payload: " + payload);
-
-  boolean waitingForReply = true;
-  String packet;
-  unsigned long timeSent = millis();
-  lora.print(payload);
-  lora.write(0x04);
-
-  for (int i = 0; i < maxRetries; i++) {
-    // Wait for reply.
-    while (waitingForReply) {
-      if (lora.available() > 0) {
-        char inChar = lora.read();
-        Serial.print(inChar);
-        if (inChar == 0x04) {
-          DEBUG_PRINTLN("Received packet " + packet);
-          if (isThisMyPacket(packet, RADIOID)) {
-            // Received my reply!
-            DEBUG_PRINTLN("Received packet " + packet + " for myself.");
-            return packet;
-          }
-          else {
-            // Not my packet. Clear packet and start listening again.
-            packet = "";
-          }
-        }
-        else packet += inChar;
-      }
-      if (millis() - timeSent >= timeout) {
-        DEBUG_PRINTLN("Waiting for LoRa reply timed out.");
-        waitingForReply = false;
-      }
-      delay(0);
-    }
-  }
-
-  // Return nothing if max retries have run their course.
-  return String("");
-}
-
-// Check if packet is destined for this feeder.
-boolean isThisMyPacket(String packet, int destinationId) {
-  int firstSeparator = packet.indexOf((char)',');
-  int packetDestination = packet.substring(0, firstSeparator).toInt();
-  if (packetDestination == destinationId) return true;
-  else return false;
-}
-
 // GET request with payload.
 String getRequest(char* endpoint, String request, int *httpCode, byte maxRetries) {
   HTTPClient http;
@@ -115,6 +57,83 @@ String getRequest(char* endpoint, String request, int *httpCode, byte maxRetries
   }
 
   return String("");
+}
+
+// Request data from LoRa base.
+String requestFromRadio(int destinationId, int originId, char command, String message, int timeout, int maxRetries) {
+  String payload =
+    String(destinationId) + "," +
+    String(originId) + "," +
+    command + "," +
+    message;
+
+  DEBUG_PRINTLN("Payload: " + payload);
+
+  boolean waitingForReply = true;
+  String packet;
+  unsigned long timeSent = millis();
+  lora.print(payload);
+  lora.write(0x04);
+
+  for (int i = 0; i < maxRetries; i++) {
+    // Wait for reply.
+    while (waitingForReply) {
+      if (lora.available() > 0) {
+        char inChar = lora.read();
+        Serial.print(inChar);
+        if (inChar == 0x04) {
+          if (isPacketValid(packet, RADIOID)) {
+            // Received my reply!
+            DEBUG_PRINTLN("Received packet " + packet + " for myself.");
+            return packet;
+          }
+          else {
+            // Not my packet. Clear packet and start listening again.
+            packet = "";
+          }
+        }
+        else packet += inChar;
+      }
+      if (millis() - timeSent >= timeout) {
+        DEBUG_PRINTLN("Waiting for LoRa reply timed out.");
+        waitingForReply = false;
+      }
+      delay(0);
+    }
+  }
+
+  // Return nothing if max retries have run their course.
+  return String("");
+}
+
+// Check if packet is destined for this feeder and if the checksum is valid.
+boolean isPacketValid(String packet, int destinationId) {
+  byte firstSeparator = packet.indexOf((char)',');
+  byte secondSeparator = packet.indexOf((char)',', firstSeparator + 1);
+  byte thirdSeparator = packet.indexOf((char)',', secondSeparator + 1);
+  byte fourthSeparator = packet.indexOf((char)',', thirdSeparator + 1);
+
+  byte checksumReceived = packet.substring(fourthSeparator + 1).toInt();
+  byte actualChecksum = generateRadioChecksum(packet.substring(0, fourthSeparator));
+  DEBUG_PRINTLN("Checksum received: " + String(checksumReceived));
+  DEBUG_PRINTLN("Actual checksum: " + String(actualChecksum));
+
+  if (actualChecksum != checksumReceived) {
+    DEBUG_PRINT("Checksum not valid. Packet will be binned.");
+    return false;
+  }
+
+  int packetDestination = packet.substring(0, firstSeparator).toInt();
+  if (packetDestination == destinationId) return true;
+  else return false;
+}
+
+byte generateRadioChecksum(String s) {
+  byte checksum = 0;
+  for (int i = 0; i < s.length(); i++) {
+    checksum ^= (byte)s.charAt(i);
+  }
+  return checksum;
 }
 
 // Basic POST request.
@@ -280,6 +299,32 @@ void sendPowerup() {
 }
 
 void getSunriseSunset() {
+#ifdef LORA
+  String packet = requestFromRadio(100, RADIOID, 'S', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
+  if (packet != "") {
+    byte firstSeparator = packet.indexOf((char)',');
+    byte secondSeparator = packet.indexOf((char)',', firstSeparator + 1);
+    byte thirdSeparator = packet.indexOf((char)',', secondSeparator + 1);
+    String message = packet.substring(thirdSeparator + 1);
+    byte firstTimeSeparator = message.indexOf((char)':');
+    byte secondTimeSeparator = message.indexOf((char)'-');
+    byte thirdTimeSeparator = message.indexOf((char)':', secondTimeSeparator + 1);
+    if (firstTimeSeparator != 0 && secondTimeSeparator != 0 && thirdTimeSeparator != 0) {
+      DEBUG_PRINTLN("Received sunrise / sunset via radio.");
+      rtcData.NIGHT_START_HOUR = message.substring(secondTimeSeparator + 1, thirdTimeSeparator).toInt();
+      rtcData.NIGHT_START_MINUTE = message.substring(thirdTimeSeparator + 1).toInt();
+      rtcData.NIGHT_END_HOUR = message.substring(0, firstTimeSeparator).toInt();
+      rtcData.NIGHT_END_MINUTE = message.substring(firstTimeSeparator + 1, secondTimeSeparator).toInt();
+    }
+    else {
+      DEBUG_PRINTLN("Setting fallback sunrise / sunset.");
+      rtcData.NIGHT_START_HOUR = 18;
+      rtcData.NIGHT_START_MINUTE = 0;
+      rtcData.NIGHT_END_HOUR = 6;
+      rtcData.NIGHT_END_MINUTE = 0;
+    }
+  }
+#else
   const size_t bufferSize = JSON_OBJECT_SIZE(1);
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
@@ -320,13 +365,18 @@ void getSunriseSunset() {
     rtcData.NIGHT_END_HOUR = sunrise_hour;
     rtcData.NIGHT_END_MINUTE = sunrise_minute;
   }
+#endif
 
   DEBUG_PRINTLN("Sunset: " + String(rtcData.NIGHT_START_HOUR) + ":" + String(rtcData.NIGHT_START_MINUTE));
   DEBUG_PRINTLN("Sunrise: " + String(rtcData.NIGHT_END_HOUR) + ":" + String(rtcData.NIGHT_END_MINUTE));
+
 }
 
 // Send powerup event to server
 void sendLowBattery() {
+#ifdef LORA
+  requestFromRadio(100, RADIOID, 'L', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
+#else
   const size_t bufferSize = JSON_OBJECT_SIZE(2);
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
@@ -343,6 +393,7 @@ void sendLowBattery() {
   String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
   DEBUG_PRINTLN("Result: ");
   DEBUG_PRINTLN(res);
+#endif
 }
 
 // Offload cached readings to server
