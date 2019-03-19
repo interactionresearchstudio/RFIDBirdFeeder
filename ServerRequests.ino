@@ -239,6 +239,26 @@ void getSunriseSunset() {
   DEBUG_PRINTLN("Sunrise: " + String(rtcData.NIGHT_END_HOUR) + ":" + String(rtcData.NIGHT_END_MINUTE));
 }
 
+// Send powerup event to server
+void sendLowBattery() {
+  const size_t bufferSize = JSON_OBJECT_SIZE(2);
+  DynamicJsonBuffer jsonBuffer(bufferSize);
+
+  JsonObject& root = jsonBuffer.createObject();
+  root["stub"] = FEEDERSTUB;
+  root["type"] = "lowbattery";
+
+  String payload;
+  root.printTo(payload);
+  DEBUG_PRINT("Payload: ");
+  DEBUG_PRINTLN(payload);
+  DEBUG_PRINTLN("Sending Low Battery Event...");
+  int httpCode;
+  String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
+  DEBUG_PRINTLN("Result: ");
+  DEBUG_PRINTLN(res);
+}
+
 // Offload cached readings to server
 void syncCache() {
   // Loop through cache array

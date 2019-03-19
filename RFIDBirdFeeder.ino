@@ -143,5 +143,6 @@ void setup() {
 
 void loop() {
   updateRfid();
+  rfidModule.isModuleReady();
   updateSleep();
 }
