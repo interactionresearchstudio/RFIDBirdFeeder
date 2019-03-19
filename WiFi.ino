@@ -110,7 +110,7 @@ void loadCredentials() {
   if (String(ok) != String("OK")) {
     WLAN_SSID[0] = 0;
     WLAN_PASS[0] = 0;
-    Serial.println("Wireless credentials not set. Please set now.");
+    DEBUG_PRINTLN("Wireless credentials not set. Please set now.");
     readCredentialsFromUart();
   }
   DEBUG_PRINT("Recovered credentials: ");

@@ -28,6 +28,64 @@ String getRequest(char* endpoint, int *httpCode, byte maxRetries) {
   return String("");
 }
 
+// Request data from LoRa base.
+String requestFromRadio(int destinationId, int originId, char command, String message, int timeout, int maxRetries) {
+  String payload =
+    String(destinationId) + "," +
+    String(originId) + "," +
+    command + "," +
+    message;
+
+  //uint32_t checksum = calculateCRC32(payload.toCharArray(), payload.length());
+
+  DEBUG_PRINTLN("Payload: " + payload);
+
+  boolean waitingForReply = true;
+  String packet;
+  unsigned long timeSent = millis();
+  lora.print(payload);
+  lora.write(0x04);
+
+  for (int i = 0; i < maxRetries; i++) {
+    // Wait for reply.
+    while (waitingForReply) {
+      if (lora.available() > 0) {
+        char inChar = lora.read();
+        Serial.print(inChar);
+        if (inChar == 0x04) {
+          DEBUG_PRINTLN("Received packet " + packet);
+          if (isThisMyPacket(packet, RADIOID)) {
+            // Received my reply!
+            DEBUG_PRINTLN("Received packet " + packet + " for myself.");
+            return packet;
+          }
+          else {
+            // Not my packet. Clear packet and start listening again.
+            packet = "";
+          }
+        }
+        else packet += inChar;
+      }
+      if (millis() - timeSent >= timeout) {
+        DEBUG_PRINTLN("Waiting for LoRa reply timed out.");
+        waitingForReply = false;
+      }
+      delay(0);
+    }
+  }
+
+  // Return nothing if max retries have run their course.
+  return String("");
+}
+
+// Check if packet is destined for this feeder.
+boolean isThisMyPacket(String packet, int destinationId) {
+  int firstSeparator = packet.indexOf((char)',');
+  int packetDestination = packet.substring(0, firstSeparator).toInt();
+  if (packetDestination == destinationId) return true;
+  else return false;
+}
+
 // GET request with payload.
 String getRequest(char* endpoint, String request, int *httpCode, byte maxRetries) {
   HTTPClient http;
@@ -92,6 +150,18 @@ String postRequest(char* endpoint, String request, int *httpCode, byte maxRetrie
 
 // Get Unix time from server.
 unsigned long getTime() {
+#ifdef LORA
+  String packet = requestFromRadio(100, RADIOID, 'T', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
+  if (packet != "") {
+    byte firstSeparator = packet.indexOf((char)',');
+    byte secondSeparator = packet.indexOf((char)',', firstSeparator + 1);
+    byte thirdSeparator = packet.indexOf((char)',', secondSeparator + 1);
+    String message = packet.substring(thirdSeparator + 1);
+    unsigned long currentTime = atol(message.c_str());
+    return currentTime;
+  }
+  else return 0;
+#else
   const size_t bufferSize = JSON_OBJECT_SIZE(1) + 20;
   DynamicJsonBuffer jsonBuffer(bufferSize);
   int httpCode;
@@ -106,10 +176,15 @@ unsigned long getTime() {
     return 0;
   }
   return root["time"];
+#endif
 }
 
 // Send tracking event to server.
 void postTrack(String rfid) {
+#ifdef LORA
+  requestFromRadio(100, RADIOID, 'R', rfid, LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
+  //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
+#else
   const size_t bufferSize = JSON_OBJECT_SIZE(3);
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
@@ -129,6 +204,7 @@ void postTrack(String rfid) {
     DEBUG_PRINTLN("Post request failed. Caching track...");
     cacheTag(tagData);
   }
+#endif
 }
 
 // Send tracking event to server, with local time.
@@ -156,6 +232,10 @@ int postCachedTrack(String rfid, String datetime) {
 
 // Send ping to server
 void sendPing() {
+#ifdef LORA
+  requestFromRadio(100, RADIOID, 'P', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
+  //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
+#else
   const size_t bufferSize = JSON_OBJECT_SIZE(1);
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
@@ -171,10 +251,15 @@ void sendPing() {
   String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
   DEBUG_PRINTLN("Result: ");
   DEBUG_PRINTLN(res);
+#endif
 }
 
 // Send powerup event to server
 void sendPowerup() {
+#ifdef LORA
+  requestFromRadio(100, RADIOID, 'U', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
+  //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
+#else
   const size_t bufferSize = JSON_OBJECT_SIZE(2);
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
@@ -191,6 +276,7 @@ void sendPowerup() {
   String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
   DEBUG_PRINTLN("Result: ");
   DEBUG_PRINTLN(res);
+#endif
 }
 
 void getSunriseSunset() {
@@ -301,15 +387,16 @@ void checkForUpdate() {
 
   switch (ret) {
     case HTTP_UPDATE_FAILED:
-      Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+      //Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+      DEBUG_PRINTLN("HTTP_UPDATE_FAILED Error");
       break;
 
     case HTTP_UPDATE_NO_UPDATES:
-      Serial.println("HTTP_UPDATE_NO_UPDATES");
+      DEBUG_PRINTLN("HTTP_UPDATE_NO_UPDATES");
       break;
 
     case HTTP_UPDATE_OK:
-      Serial.println("HTTP_UPDATE_OK");
+      DEBUG_PRINTLN("HTTP_UPDATE_OK");
       break;
   }
 }

@@ -47,7 +47,9 @@ void updateRfid() {
         }
       }
     }
+#ifndef LORA
     connectToWiFi();
+#endif
     postTrack(rfid);
     for (int i = 0; i < 5; i++) {
       rtcData.previousTag[i] = tagData[i];
@@ -56,6 +58,3 @@ void updateRfid() {
     digitalWrite(14, 0);
   }
 }
-
-
-

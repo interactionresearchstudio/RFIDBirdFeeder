@@ -10,6 +10,18 @@
 // DEBUG - uncomment for debug info via serial
 #define DEBUG
 
+// Uncomment to send data through LoRa module instead of WiFi.
+#define LORA
+
+// LoRa software serial
+#ifdef LORA
+#include <SoftwareSerial.h>
+SoftwareSerial lora = SoftwareSerial(4, 5);
+#define LORA_REQUEST_TIMEOUT 4000
+#define LORA_REQUEST_ATTEMPTS 3
+#define RADIOID 1
+#endif
+
 // Debug print macros
 #ifdef DEBUG
 #define DEBUG_PRINTLN(x)  Serial.println(x)
@@ -93,6 +105,10 @@ void setup() {
   DEBUG_PRINTLN(FEEDERSTUB);
   DEBUG_PRINT("Reset reason: ");
   DEBUG_PRINTLN(ESP.getResetReason());
+
+#ifdef LORA
+  lora.begin(19200);
+#endif
 
   readRTCData();
   setTime(getUnixTime());
