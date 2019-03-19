@@ -31,7 +31,7 @@
 // CONFIG DEFINES
 char WLAN_SSID[32];
 char WLAN_PASS[32];
-#define HOST "http://feedernet.herokuapp.com"
+#define HOST "http://feedernet-staging.herokuapp.com"
 String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 4000
@@ -39,8 +39,6 @@ String FEEDERSTUB = " ";
 #define NIGHT_SLEEP_INTERVAL 24000
 #define WIFI_QUICK_MAX_RETRIES 100
 #define WIFI_REGULAR_MAX_RETRIES 600
-//#define NIGHT_START 17
-//#define NIGHT_END 7
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
 #define REQUEST_RETRIES 2
