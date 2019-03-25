@@ -11,16 +11,16 @@
 #define DEBUG
 
 // Uncomment to send data through LoRa module instead of WiFi.
-#define LORA
+//#define LORA
 
 // LoRa software serial
-#ifdef LORA
+//#ifdef LORA
 #include <SoftwareSerial.h>
 SoftwareSerial lora = SoftwareSerial(4, 5);
 #define LORA_REQUEST_TIMEOUT 4000
 #define LORA_REQUEST_ATTEMPTS 3
 #define RADIOID 1
-#endif
+//#endif
 
 // Debug print macros
 #ifdef DEBUG
@@ -54,7 +54,7 @@ String FEEDERSTUB = " ";
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
 #define REQUEST_RETRIES 2
-#define VERSION "v1.4"
+#define VERSION "v1.5"
 
 RFID rfidModule(1.1);
 
