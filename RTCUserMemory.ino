@@ -1,3 +1,5 @@
+boolean rtcValid = false;
+
 // Check validity of data saved in RTC user memory.
 uint32_t calculateCRC32(const uint8_t *data, size_t length) {
   uint32_t crc = 0xffffffff;

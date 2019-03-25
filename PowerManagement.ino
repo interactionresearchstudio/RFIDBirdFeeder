@@ -17,7 +17,9 @@ void moduleLowPower() {
   digitalWrite(14, HIGH);
   if (rfidModule.isModuleReady() == false ) {
     DEBUG_PRINTLN("Battery too low to operate RFID module");
-    if (!rtcData.isLoraUsed) connectToWiFi();
+#ifndef LORA
+    connectToWiFi();
+#endif
     sendLowBattery();
   }
 }
@@ -28,7 +30,9 @@ void updateNightTime() {
   rtcData.sleeping = 1;
   if (hour() == rtcData.NIGHT_END_HOUR - 1 && minute() == 45) {
     DEBUG_PRINTLN("Getting time before wake-up...");
-    if (!rtcData.isLoraUsed) connectToWiFi();
+#ifndef LORA
+    connectToWiFi();
+#endif
     uint32_t newTime = getTime();
     // Only save time if successfully retrieved from the server.
     if (rtcData.unixTime != 0) {
@@ -68,14 +72,12 @@ void updateUart() {
 
 // Powerup event
 void powerup() {
-  rtcData.isLoraUsed = isLoraConnected();
-  if(!rtcData.isLoraUsed) {
-    DEBUG_PRINTLN("Reset from Powerup. Press W to change WiFi credentials...");
-    delay(1500);
-    updateUart();
-    connectToWiFi();
-  }
-  getSunriseSunset();
+#ifndef LORA
+  DEBUG_PRINTLN("Reset from Powerup. Press W to change WiFi credentials...");
+  delay(1500);
+  updateUart();
+  connectToWiFi();
+#endif
   uint32_t newTime = getTime();
   // If server time has failed, set time to NIGHT_END.
   if (newTime == 0) {
@@ -102,16 +104,21 @@ void powerup() {
   DEBUG_PRINT(hour());
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
-  
+
+  getSunriseSunset();
   sendPowerup();
-  if(!rtcData.isLoraUsed) checkForUpdate();
+#ifndef LORA
+  checkForUpdate();
+#endif
   moduleLowPower();
 }
 
 // Pre-sleep event
 void prepareForSleep() {
   DEBUG_PRINTLN("Getting time before sleep...");
-  if(!rtcData.isLoraUsed) connectToWiFi();
+#ifndef LORA
+  connectToWiFi();
+#endif
   uint32_t newTime;
   newTime = getTime();
   if (newTime == 0) {
@@ -127,18 +134,19 @@ void prepareForSleep() {
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
   sendPing();
-  if(!rtcData.isLoraUsed) syncCache();
+#ifndef LORA
+  syncCache();
+#endif
   moduleLowPower();
 }
 
 // Post-sleep event
 void prepareForDaytime() {
   DEBUG_PRINTLN("Awaken from night-time sleep");
-  if(!rtcData.isLoraUsed) {
-    connectToWiFi();
-    checkForUpdate();
-  }
-  getSunriseSunset();
+#ifndef LORA
+  connectToWiFi();
+  checkForUpdate();
+#endif
   uint32_t newTime;
   newTime = getTime();
   // If server time has failed, set time to NIGHT_END.
@@ -155,6 +163,7 @@ void prepareForDaytime() {
   DEBUG_PRINT(hour());
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(minute());
+  getSunriseSunset();
   sendPing();
   moduleLowPower();
   rtcData.sleeping = 0;
@@ -163,7 +172,9 @@ void prepareForDaytime() {
 // Try to resync time with server in the event of a time error.
 void resyncTime() {
   DEBUG_PRINTLN("Resyncing time...");
-  if(!rtcData.isLoraUsed) connectToWiFi();
+#ifndef LORA
+  connectToWiFi();
+#endif
   uint32_t newTime;
   newTime = getTime();
   // If server time has failed, set time to NIGHT_END.
