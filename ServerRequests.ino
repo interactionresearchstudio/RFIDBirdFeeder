@@ -169,61 +169,62 @@ String postRequest(char* endpoint, String request, int *httpCode, byte maxRetrie
 
 // Get Unix time from server.
 unsigned long getTime() {
-#ifdef LORA
-  String packet = requestFromRadio(100, RADIOID, 'T', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
-  if (packet != "") {
-    byte firstSeparator = packet.indexOf((char)',');
-    byte secondSeparator = packet.indexOf((char)',', firstSeparator + 1);
-    byte thirdSeparator = packet.indexOf((char)',', secondSeparator + 1);
-    String message = packet.substring(thirdSeparator + 1);
-    unsigned long currentTime = atol(message.c_str());
-    return currentTime;
+  if (rtcData.isLoraUsed) {
+    String packet = requestFromRadio(100, RADIOID, 'T', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
+    if (packet != "") {
+      byte firstSeparator = packet.indexOf((char)',');
+      byte secondSeparator = packet.indexOf((char)',', firstSeparator + 1);
+      byte thirdSeparator = packet.indexOf((char)',', secondSeparator + 1);
+      String message = packet.substring(thirdSeparator + 1);
+      unsigned long currentTime = atol(message.c_str());
+      return currentTime;
+    }
+    else return 0;
   }
-  else return 0;
-#else
-  const size_t bufferSize = JSON_OBJECT_SIZE(1) + 20;
-  DynamicJsonBuffer jsonBuffer(bufferSize);
-  int httpCode;
-  String timeJson = getRequest("/api/time", &httpCode, REQUEST_RETRIES);
-  if (httpCode != 200) {
-    DEBUG_PRINTLN("Could not retrieve time from server.");
-    return 0;
+  else {
+    const size_t bufferSize = JSON_OBJECT_SIZE(1) + 20;
+    DynamicJsonBuffer jsonBuffer(bufferSize);
+    int httpCode;
+    String timeJson = getRequest("/api/time", &httpCode, REQUEST_RETRIES);
+    if (httpCode != 200) {
+      DEBUG_PRINTLN("Could not retrieve time from server.");
+      return 0;
+    }
+    JsonObject& root = jsonBuffer.parseObject(timeJson);
+    if (!root.success()) {
+      DEBUG_PRINTLN("Could not parse JSON object.");
+      return 0;
+    }
+    return root["time"];
   }
-  JsonObject& root = jsonBuffer.parseObject(timeJson);
-  if (!root.success()) {
-    DEBUG_PRINTLN("Could not parse JSON object.");
-    return 0;
-  }
-  return root["time"];
-#endif
 }
 
 // Send tracking event to server.
 void postTrack(String rfid) {
-#ifdef LORA
-  requestFromRadio(100, RADIOID, 'R', rfid, LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
-  //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
-#else
-  const size_t bufferSize = JSON_OBJECT_SIZE(3);
-  DynamicJsonBuffer jsonBuffer(bufferSize);
-
-  JsonObject& root = jsonBuffer.createObject();
-  root["datetime"] = " ";
-  root["rfid"] = rfid;
-  root["stub"] = FEEDERSTUB;
-
-  String payload;
-  root.printTo(payload);
-  DEBUG_PRINT("Payload: ");
-  DEBUG_PRINTLN(payload);
-  DEBUG_PRINTLN("Posting track...");
-  int httpCode;
-  String res = postRequest("/api/recordTrack", payload, &httpCode, REQUEST_RETRIES);
-  if (httpCode != 200) {
-    DEBUG_PRINTLN("Post request failed. Caching track...");
-    cacheTag(tagData);
+  if (rtcData.isLoraUsed) {
+    requestFromRadio(100, RADIOID, 'R', rfid, LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
   }
-#endif
+  else {
+    const size_t bufferSize = JSON_OBJECT_SIZE(3);
+    DynamicJsonBuffer jsonBuffer(bufferSize);
+  
+    JsonObject& root = jsonBuffer.createObject();
+    root["datetime"] = " ";
+    root["rfid"] = rfid;
+    root["stub"] = FEEDERSTUB;
+  
+    String payload;
+    root.printTo(payload);
+    DEBUG_PRINT("Payload: ");
+    DEBUG_PRINTLN(payload);
+    DEBUG_PRINTLN("Posting track...");
+    int httpCode;
+    String res = postRequest("/api/recordTrack", payload, &httpCode, REQUEST_RETRIES);
+    if (httpCode != 200) {
+      DEBUG_PRINTLN("Post request failed. Caching track...");
+      cacheTag(tagData);
+    }
+  }
 }
 
 // Send tracking event to server, with local time.
@@ -251,119 +252,120 @@ int postCachedTrack(String rfid, String datetime) {
 
 // Send ping to server
 void sendPing() {
-#ifdef LORA
-  requestFromRadio(100, RADIOID, 'P', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
-  //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
-#else
-  const size_t bufferSize = JSON_OBJECT_SIZE(1);
-  DynamicJsonBuffer jsonBuffer(bufferSize);
-
-  JsonObject& root = jsonBuffer.createObject();
-  root["stub"] = FEEDERSTUB;
-
-  String payload;
-  root.printTo(payload);
-  DEBUG_PRINT("Payload: ");
-  DEBUG_PRINTLN(payload);
-  DEBUG_PRINTLN("Sending Ping...");
-  int httpCode;
-  String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
-  DEBUG_PRINTLN("Result: ");
-  DEBUG_PRINTLN(res);
-#endif
+  if (rtcData.isLoraUsed) {
+    requestFromRadio(100, RADIOID, 'P', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
+  }
+  else {
+    const size_t bufferSize = JSON_OBJECT_SIZE(1);
+    DynamicJsonBuffer jsonBuffer(bufferSize);
+  
+    JsonObject& root = jsonBuffer.createObject();
+    root["stub"] = FEEDERSTUB;
+  
+    String payload;
+    root.printTo(payload);
+    DEBUG_PRINT("Payload: ");
+    DEBUG_PRINTLN(payload);
+    DEBUG_PRINTLN("Sending Ping...");
+    int httpCode;
+    String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
+    DEBUG_PRINTLN("Result: ");
+    DEBUG_PRINTLN(res);
+  }
 }
 
 // Send powerup event to server
 void sendPowerup() {
-#ifdef LORA
-  requestFromRadio(100, RADIOID, 'U', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
-  //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
-#else
-  const size_t bufferSize = JSON_OBJECT_SIZE(2);
-  DynamicJsonBuffer jsonBuffer(bufferSize);
-
-  JsonObject& root = jsonBuffer.createObject();
-  root["stub"] = FEEDERSTUB;
-  root["type"] = "powerup";
-
-  String payload;
-  root.printTo(payload);
-  DEBUG_PRINT("Payload: ");
-  DEBUG_PRINTLN(payload);
-  DEBUG_PRINTLN("Sending Powerup Event...");
-  int httpCode;
-  String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
-  DEBUG_PRINTLN("Result: ");
-  DEBUG_PRINTLN(res);
-#endif
+  if (rtcData.isLoraUsed) {
+    requestFromRadio(100, RADIOID, 'U', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
+  }
+  else {
+    const size_t bufferSize = JSON_OBJECT_SIZE(2);
+    DynamicJsonBuffer jsonBuffer(bufferSize);
+  
+    JsonObject& root = jsonBuffer.createObject();
+    root["stub"] = FEEDERSTUB;
+    root["type"] = "powerup";
+  
+    String payload;
+    root.printTo(payload);
+    DEBUG_PRINT("Payload: ");
+    DEBUG_PRINTLN(payload);
+    DEBUG_PRINTLN("Sending Powerup Event...");
+    int httpCode;
+    String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
+    DEBUG_PRINTLN("Result: ");
+    DEBUG_PRINTLN(res);
+  }
 }
 
 void getSunriseSunset() {
-#ifdef LORA
-  String packet = requestFromRadio(100, RADIOID, 'S', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
-  if (packet != "") {
-    byte firstSeparator = packet.indexOf((char)',');
-    byte secondSeparator = packet.indexOf((char)',', firstSeparator + 1);
-    byte thirdSeparator = packet.indexOf((char)',', secondSeparator + 1);
-    String message = packet.substring(thirdSeparator + 1);
-    byte firstTimeSeparator = message.indexOf((char)':');
-    byte secondTimeSeparator = message.indexOf((char)'-');
-    byte thirdTimeSeparator = message.indexOf((char)':', secondTimeSeparator + 1);
-    DEBUG_PRINTLN("Received sunrise / sunset via radio.");
-    rtcData.NIGHT_START_HOUR = message.substring(secondTimeSeparator + 1, thirdTimeSeparator).toInt();
-    rtcData.NIGHT_START_MINUTE = message.substring(thirdTimeSeparator + 1).toInt();
-    rtcData.NIGHT_END_HOUR = message.substring(0, firstTimeSeparator).toInt();
-    rtcData.NIGHT_END_MINUTE = message.substring(firstTimeSeparator + 1, secondTimeSeparator).toInt();
+  if (rtcData.isLoraUsed) {
+    String packet = requestFromRadio(100, RADIOID, 'S', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
+    if (packet != "") {
+      byte firstSeparator = packet.indexOf((char)',');
+      byte secondSeparator = packet.indexOf((char)',', firstSeparator + 1);
+      byte thirdSeparator = packet.indexOf((char)',', secondSeparator + 1);
+      String message = packet.substring(thirdSeparator + 1);
+      byte firstTimeSeparator = message.indexOf((char)':');
+      byte secondTimeSeparator = message.indexOf((char)'-');
+      byte thirdTimeSeparator = message.indexOf((char)':', secondTimeSeparator + 1);
+      DEBUG_PRINTLN("Received sunrise / sunset via radio.");
+      rtcData.NIGHT_START_HOUR = message.substring(secondTimeSeparator + 1, thirdTimeSeparator).toInt();
+      rtcData.NIGHT_START_MINUTE = message.substring(thirdTimeSeparator + 1).toInt();
+      rtcData.NIGHT_END_HOUR = message.substring(0, firstTimeSeparator).toInt();
+      rtcData.NIGHT_END_MINUTE = message.substring(firstTimeSeparator + 1, secondTimeSeparator).toInt();
+    }
+    else {
+      DEBUG_PRINTLN("Setting fallback sunrise / sunset.");
+      rtcData.NIGHT_START_HOUR = 18;
+      rtcData.NIGHT_START_MINUTE = 0;
+      rtcData.NIGHT_END_HOUR = 6;
+      rtcData.NIGHT_END_MINUTE = 0;
+    }
   }
   else {
-    DEBUG_PRINTLN("Setting fallback sunrise / sunset.");
-    rtcData.NIGHT_START_HOUR = 18;
-    rtcData.NIGHT_START_MINUTE = 0;
-    rtcData.NIGHT_END_HOUR = 6;
-    rtcData.NIGHT_END_MINUTE = 0;
+    const size_t bufferSize = JSON_OBJECT_SIZE(1);
+    DynamicJsonBuffer jsonBuffer(bufferSize);
+  
+    JsonObject& root = jsonBuffer.createObject();
+    root["stub"] = FEEDERSTUB;
+  
+    String payload;
+    root.printTo(payload);
+    DEBUG_PRINT("Payload: ");
+    DEBUG_PRINTLN(payload);
+    DEBUG_PRINTLN("Getting sunrise / sunset...");
+    int httpCode;
+    String res = getRequest("/api/time/sunrisesunset", payload, &httpCode, REQUEST_RETRIES);
+    DEBUG_PRINTLN("Result: ");
+    DEBUG_PRINTLN(res);
+  
+    const size_t capacity = 3 * JSON_OBJECT_SIZE(2) + 60;
+    DynamicJsonBuffer resBuffer(capacity);
+  
+    JsonObject& resRoot = resBuffer.parseObject(res);
+  
+    uint8_t sunrise_hour = resRoot["sunrise"]["hour"];
+    uint8_t sunrise_minute = resRoot["sunrise"]["minute"];
+  
+    uint8_t sunset_hour = resRoot["sunset"]["hour"];
+    uint8_t sunset_minute = resRoot["sunset"]["minute"];
+  
+    if (httpCode != 200) {
+      DEBUG_PRINTLN("Setting fallback sunrise / sunset.");
+      rtcData.NIGHT_START_HOUR = 18;
+      rtcData.NIGHT_START_MINUTE = 0;
+      rtcData.NIGHT_END_HOUR = 6;
+      rtcData.NIGHT_END_MINUTE = 0;
+    }
+    else {
+      rtcData.NIGHT_START_HOUR = sunset_hour;
+      rtcData.NIGHT_START_MINUTE = sunset_minute;
+      rtcData.NIGHT_END_HOUR = sunrise_hour;
+      rtcData.NIGHT_END_MINUTE = sunrise_minute;
+    }
   }
-#else
-  const size_t bufferSize = JSON_OBJECT_SIZE(1);
-  DynamicJsonBuffer jsonBuffer(bufferSize);
-
-  JsonObject& root = jsonBuffer.createObject();
-  root["stub"] = FEEDERSTUB;
-
-  String payload;
-  root.printTo(payload);
-  DEBUG_PRINT("Payload: ");
-  DEBUG_PRINTLN(payload);
-  DEBUG_PRINTLN("Getting sunrise / sunset...");
-  int httpCode;
-  String res = getRequest("/api/time/sunrisesunset", payload, &httpCode, REQUEST_RETRIES);
-  DEBUG_PRINTLN("Result: ");
-  DEBUG_PRINTLN(res);
-
-  const size_t capacity = 3 * JSON_OBJECT_SIZE(2) + 60;
-  DynamicJsonBuffer resBuffer(capacity);
-
-  JsonObject& resRoot = resBuffer.parseObject(res);
-
-  uint8_t sunrise_hour = resRoot["sunrise"]["hour"];
-  uint8_t sunrise_minute = resRoot["sunrise"]["minute"];
-
-  uint8_t sunset_hour = resRoot["sunset"]["hour"];
-  uint8_t sunset_minute = resRoot["sunset"]["minute"];
-
-  if (httpCode != 200) {
-    DEBUG_PRINTLN("Setting fallback sunrise / sunset.");
-    rtcData.NIGHT_START_HOUR = 18;
-    rtcData.NIGHT_START_MINUTE = 0;
-    rtcData.NIGHT_END_HOUR = 6;
-    rtcData.NIGHT_END_MINUTE = 0;
-  }
-  else {
-    rtcData.NIGHT_START_HOUR = sunset_hour;
-    rtcData.NIGHT_START_MINUTE = sunset_minute;
-    rtcData.NIGHT_END_HOUR = sunrise_hour;
-    rtcData.NIGHT_END_MINUTE = sunrise_minute;
-  }
-#endif
 
   DEBUG_PRINTLN("Sunset: " + String(rtcData.NIGHT_START_HOUR) + ":" + String(rtcData.NIGHT_START_MINUTE));
   DEBUG_PRINTLN("Sunrise: " + String(rtcData.NIGHT_END_HOUR) + ":" + String(rtcData.NIGHT_END_MINUTE));
@@ -372,26 +374,27 @@ void getSunriseSunset() {
 
 // Send powerup event to server
 void sendLowBattery() {
-#ifdef LORA
-  requestFromRadio(100, RADIOID, 'L', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
-#else
-  const size_t bufferSize = JSON_OBJECT_SIZE(2);
-  DynamicJsonBuffer jsonBuffer(bufferSize);
-
-  JsonObject& root = jsonBuffer.createObject();
-  root["stub"] = FEEDERSTUB;
-  root["type"] = "lowbattery";
-
-  String payload;
-  root.printTo(payload);
-  DEBUG_PRINT("Payload: ");
-  DEBUG_PRINTLN(payload);
-  DEBUG_PRINTLN("Sending Low Battery Event...");
-  int httpCode;
-  String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
-  DEBUG_PRINTLN("Result: ");
-  DEBUG_PRINTLN(res);
-#endif
+  if (rtcData.isLoraUsed) {
+    requestFromRadio(100, RADIOID, 'L', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
+  }
+  else {
+    const size_t bufferSize = JSON_OBJECT_SIZE(2);
+    DynamicJsonBuffer jsonBuffer(bufferSize);
+  
+    JsonObject& root = jsonBuffer.createObject();
+    root["stub"] = FEEDERSTUB;
+    root["type"] = "lowbattery";
+  
+    String payload;
+    root.printTo(payload);
+    DEBUG_PRINT("Payload: ");
+    DEBUG_PRINTLN(payload);
+    DEBUG_PRINTLN("Sending Low Battery Event...");
+    int httpCode;
+    String res = postRequest("/api/ping", payload, &httpCode, REQUEST_RETRIES);
+    DEBUG_PRINTLN("Result: ");
+    DEBUG_PRINTLN(res);
+  }
 }
 
 // Offload cached readings to server
@@ -448,4 +451,31 @@ void checkForUpdate() {
       DEBUG_PRINTLN("HTTP_UPDATE_OK");
       break;
   }
+}
+
+boolean isLoraConnected() {
+  boolean isConnected = false;
+  byte counter = 0;
+  lora.print("ER_CMD#T3");
+  delay(10);
+  String inString;
+  while(lora.available() > 0) {
+    char inChar = lora.read();
+    inString += inChar;
+    delay(1);
+  }
+  if (inString == "ER_CMD#T3") {
+    DEBUG_PRINT("eRIC-LORA module present.");
+    lora.print("ACK");
+    isConnected = true;
+  }
+  delay(10);
+  DEBUG_PRINT(" Firmware version: ");
+  while(lora.available() > 0) {
+    char inChar = lora.read();
+    DEBUG_PRINT(inChar);
+    delay(1);
+  }
+  DEBUG_PRINTLN();
+  return isConnected;
 }

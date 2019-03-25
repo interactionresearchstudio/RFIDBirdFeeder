@@ -14,13 +14,8 @@
 #define LORA
 
 // LoRa software serial
-#ifdef LORA
 #include <SoftwareSerial.h>
 SoftwareSerial lora = SoftwareSerial(4, 5);
-#define LORA_REQUEST_TIMEOUT 4000
-#define LORA_REQUEST_ATTEMPTS 3
-#define RADIOID 1
-#endif
 
 // Debug print macros
 #ifdef DEBUG
@@ -43,7 +38,7 @@ SoftwareSerial lora = SoftwareSerial(4, 5);
 // CONFIG DEFINES
 char WLAN_SSID[32];
 char WLAN_PASS[32];
-#define HOST "http://feedernet-staging.herokuapp.com"
+#define HOST "http://feedernet.herokuapp.com"
 String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 4000
@@ -54,6 +49,9 @@ String FEEDERSTUB = " ";
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
 #define REQUEST_RETRIES 2
+#define LORA_REQUEST_TIMEOUT 4000
+#define LORA_REQUEST_ATTEMPTS 3
+#define RADIOID 1
 #define VERSION "v1.4"
 
 RFID rfidModule(1.1);
@@ -76,7 +74,8 @@ struct {
   uint8_t NIGHT_END_HOUR;
   uint8_t NIGHT_START_MINUTE;
   uint8_t NIGHT_END_MINUTE;
-
+  bool isLoraUsed;
+  uint8_t padding[3];
 } rtcData;
 
 long prevMills;
@@ -112,6 +111,9 @@ void setup() {
 
   readRTCData();
   setTime(getUnixTime());
+
+  if (rtcData.isLoraUsed) DEBUG_PRINTLN("LoRa active.");
+  else DEBUG_PRINTLN("LoRa not used.");
 
   if (ESP.getResetReason() != "Deep-Sleep Wake") {
     powerup();
