@@ -74,9 +74,10 @@ struct {
   uint8_t NIGHT_END_HOUR;
   uint8_t NIGHT_START_MINUTE;
   uint8_t NIGHT_END_MINUTE;
-  bool isLoraUsed;
+  boolean isLoraUsed;
   uint8_t padding[3];
 } rtcData;
+boolean rtcValid = false;
 
 long prevMills;
 int interval = 100;
@@ -112,8 +113,10 @@ void setup() {
   readRTCData();
   setTime(getUnixTime());
 
-  if (rtcData.isLoraUsed) DEBUG_PRINTLN("LoRa active.");
-  else DEBUG_PRINTLN("LoRa not used.");
+  if (rtcValid) {
+    if (rtcData.isLoraUsed) DEBUG_PRINTLN("LoRa active.");
+    else DEBUG_PRINTLN("LoRa not used.");
+  }
 
   if (ESP.getResetReason() != "Deep-Sleep Wake") {
     powerup();

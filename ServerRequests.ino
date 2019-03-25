@@ -300,6 +300,7 @@ void sendPowerup() {
 }
 
 void getSunriseSunset() {
+  DEBUG_PRINTLN("Getting sunrise / sunset...");
   if (rtcData.isLoraUsed) {
     String packet = requestFromRadio(100, RADIOID, 'S', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
     if (packet != "") {
@@ -335,7 +336,7 @@ void getSunriseSunset() {
     root.printTo(payload);
     DEBUG_PRINT("Payload: ");
     DEBUG_PRINTLN(payload);
-    DEBUG_PRINTLN("Getting sunrise / sunset...");
+    
     int httpCode;
     String res = getRequest("/api/time/sunrisesunset", payload, &httpCode, REQUEST_RETRIES);
     DEBUG_PRINTLN("Result: ");
