@@ -43,7 +43,7 @@ SoftwareSerial lora = SoftwareSerial(4, 5);
 // CONFIG DEFINES
 char WLAN_SSID[32];
 char WLAN_PASS[32];
-#define HOST "http://feedernet-staging.herokuapp.com"
+#define HOST "http://feedernet.herokuapp.com"
 String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 4000
@@ -124,6 +124,7 @@ void setup() {
   DEBUG_PRINTLN(second());
 
   // Night time
+  /*
   if (hour() >= rtcData.NIGHT_START_HOUR && hour() <= 23) {
     DEBUG_PRINTLN("Night time detected.");
     updateNightTime();
@@ -144,7 +145,7 @@ void setup() {
   if (rtcData.sleeping == 1) {
     prepareForDaytime();
   }
-
+*/
   // Check if time error exists
   if (rtcData.timeError == 1) {
     // If time is greater than 0 and is close to the resync interval, try to resync.
@@ -159,6 +160,6 @@ void setup() {
 
 void loop() {
   updateRfid();
-  rfidModule.isModuleReady();
-  updateSleep();
+ // rfidModule.isModuleReady();
+ // updateSleep();
 }

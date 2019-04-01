@@ -108,7 +108,7 @@ void powerup() {
   getSunriseSunset();
   sendPowerup();
 #ifndef LORA
-  checkForUpdate();
+ // checkForUpdate();
 #endif
   moduleLowPower();
 }
