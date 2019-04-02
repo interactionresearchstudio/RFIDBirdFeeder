@@ -43,7 +43,7 @@ SoftwareSerial lora = SoftwareSerial(4, 5);
 // CONFIG DEFINES
 char WLAN_SSID[32];
 char WLAN_PASS[32];
-#define HOST "http://feedernet-staging.herokuapp.com"
+#define HOST "http://feedernet.herokuapp.com"
 String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 4000
