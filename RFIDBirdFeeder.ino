@@ -92,6 +92,8 @@ const char* lon = "";
 
 byte tagData[5];
 
+unsigned long lastPing;
+
 void setup() {
   FEEDERSTUB = WiFi.macAddress();
   WiFi.mode(WIFI_OFF);
@@ -125,27 +127,27 @@ void setup() {
 
   // Night time
   /*
-  if (hour() >= rtcData.NIGHT_START_HOUR && hour() <= 23) {
+    if (hour() >= rtcData.NIGHT_START_HOUR && hour() <= 23) {
     DEBUG_PRINTLN("Night time detected.");
     updateNightTime();
-  }
-  if (hour() >= 0 && hour() < rtcData.NIGHT_END_HOUR) {
+    }
+    if (hour() >= 0 && hour() < rtcData.NIGHT_END_HOUR) {
     DEBUG_PRINTLN("Night time detected - past midnight");
     updateNightTime();
-  }
+    }
 
-  // Time sync before sleep
-  if (hour() == rtcData.NIGHT_START_HOUR && rtcData.NIGHT_START_MINUTE > 15 && minute() == rtcData.NIGHT_START_MINUTE - 15 ) {
+    // Time sync before sleep
+    if (hour() == rtcData.NIGHT_START_HOUR && rtcData.NIGHT_START_MINUTE > 15 && minute() == rtcData.NIGHT_START_MINUTE - 15 ) {
     prepareForSleep();
-  } else if (rtcData.NIGHT_START_MINUTE < 15 && hour() == rtcData.NIGHT_START_HOUR - 1 && minute() == rtcData.NIGHT_START_MINUTE + 45) {
+    } else if (rtcData.NIGHT_START_MINUTE < 15 && hour() == rtcData.NIGHT_START_HOUR - 1 && minute() == rtcData.NIGHT_START_MINUTE + 45) {
     prepareForSleep();
-  }
+    }
 
-  // Check if awaken from night time.
-  if (rtcData.sleeping == 1) {
+    // Check if awaken from night time.
+    if (rtcData.sleeping == 1) {
     prepareForDaytime();
-  }
-*/
+    }
+  */
   // Check if time error exists
   if (rtcData.timeError == 1) {
     // If time is greater than 0 and is close to the resync interval, try to resync.
@@ -161,11 +163,12 @@ void setup() {
 void loop() {
   updateRfid();
 
-  if (millis() % 3600000 == 0) {
+  if (millis() - lastPing >= 3600000) {
+    lastPing = millis();
     connectToWiFi();
     sendPing();
     WiFi.mode(WIFI_OFF);
   }
- // rfidModule.isModuleReady();
- // updateSleep();
+  // rfidModule.isModuleReady();
+  // updateSleep();
 }
