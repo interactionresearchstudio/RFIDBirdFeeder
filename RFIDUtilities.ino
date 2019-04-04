@@ -41,8 +41,9 @@ void updateRfid() {
       if (i == 4) {
         // Same tag
         DEBUG_PRINTLN("Same tag");
-        if (now() - rtcData.previousTagTime < TAG_DEBOUNCE) {
+        if (getUnixTime() - rtcData.previousTagTime < TAG_DEBOUNCE) {
           DEBUG_PRINTLN("Same tag within minute");
+          digitalWrite(14, LOW);
           return;
         }
       }
@@ -56,5 +57,6 @@ void updateRfid() {
     }
     rtcData.previousTagTime = getUnixTime();
     digitalWrite(14, 0);
+    WiFi.mode(WIFI_OFF);
   }
 }

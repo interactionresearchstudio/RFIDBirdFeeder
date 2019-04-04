@@ -160,6 +160,12 @@ void setup() {
 
 void loop() {
   updateRfid();
+
+  if (millis() % 3600000 == 0) {
+    connectToWiFi();
+    sendPing();
+    WiFi.mode(WIFI_OFF);
+  }
  // rfidModule.isModuleReady();
  // updateSleep();
 }

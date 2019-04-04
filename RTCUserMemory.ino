@@ -86,7 +86,7 @@ void cacheTag(uint8_t tag[]) {
       for (int i = 0; i < 5; i++) {
         rtcData.cachedTags[cacheIndex][i] = tag[i];
       }
-      rtcData.cachedTimes[cacheIndex] = now();
+      rtcData.cachedTimes[cacheIndex] = getUnixTime();
       rtcData.numOfCachedTags++;
       DEBUG_PRINTLN("Saved tag to empty slot.");
     }
