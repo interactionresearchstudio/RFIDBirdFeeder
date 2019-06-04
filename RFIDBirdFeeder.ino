@@ -22,6 +22,8 @@ SoftwareSerial lora = SoftwareSerial(4, 5);
 #define RADIOID 1
 //#endif
 
+
+
 // Debug print macros
 #ifdef DEBUG
 #define DEBUG_PRINTLN(x)  Serial.println(x)
@@ -108,23 +110,23 @@ void setup() {
   DEBUG_PRINT("Reset reason: ");
   DEBUG_PRINTLN(ESP.getResetReason());
 
-#ifdef LORA
+//#ifdef LORA
   lora.begin(19200);
-#endif
-
+//#endif
+  /*
   readRTCData();
   setTime(getUnixTime());
-
+  
   if (ESP.getResetReason() != "Deep-Sleep Wake") {
     powerup();
   }
-
+  
   DEBUG_PRINT(hour());
   DEBUG_PRINT(" : ");
   DEBUG_PRINT(minute());
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(second());
-
+  */
   // Night time
   /*
     if (hour() >= rtcData.NIGHT_START_HOUR && hour() <= 23) {
@@ -148,6 +150,7 @@ void setup() {
     prepareForDaytime();
     }
   */
+  /*
   // Check if time error exists
   if (rtcData.timeError == 1) {
     // If time is greater than 0 and is close to the resync interval, try to resync.
@@ -155,20 +158,21 @@ void setup() {
       resyncTime();
     }
   }
-
+  */
   // Turn on RFID
   digitalWrite(14, LOW);
 }
 
 void loop() {
   updateRfid();
-
+  /*
   if (millis() - lastPing >= 3600000) {
     lastPing = millis();
     connectToWiFi();
     sendPing();
     WiFi.mode(WIFI_OFF);
   }
+  */
   // rfidModule.isModuleReady();
   // updateSleep();
 }

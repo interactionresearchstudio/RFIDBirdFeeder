@@ -49,14 +49,18 @@ void updateRfid() {
       }
     }
 #ifndef LORA
-    connectToWiFi();
+    //connectToWiFi();
 #endif
-    postTrack(rfid);
+    //postTrack(rfid);
     for (int i = 0; i < 5; i++) {
       rtcData.previousTag[i] = tagData[i];
     }
     rtcData.previousTagTime = getUnixTime();
     digitalWrite(14, 0);
-    WiFi.mode(WIFI_OFF);
+    //WiFi.mode(WIFI_OFF);
+    for (int i = 0; i < 5; i++) {
+      lora.write(tagData[i]);
+    }
+    digitalWrite(14, 0);
   }
 }
