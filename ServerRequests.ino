@@ -152,6 +152,8 @@ String postRequest(char* endpoint, String request, int *httpCode, byte maxRetrie
       DEBUG_PRINTLN(*httpCode);
       result = http.getString();
       DEBUG_PRINTLN(result);
+      //test
+    //  testMode();
       return result;
     }
     else {
@@ -160,6 +162,12 @@ String postRequest(char* endpoint, String request, int *httpCode, byte maxRetrie
       if (maxRetries > 0) {
         DEBUG_PRINT("Retry #");
         DEBUG_PRINTLN(i + 1);
+        //increase retry element of json buffer.
+        const size_t bufferSize = JSON_OBJECT_SIZE(4);
+        DynamicJsonBuffer jsonBuffer(bufferSize);
+        JsonObject& root = jsonBuffer.parseObject(request);
+        root[String("retries")] = i;
+        root.printTo(request);
       }
     }
   }
@@ -211,6 +219,7 @@ void postTrack(String rfid) {
   root["datetime"] = " ";
   root["rfid"] = rfid;
   root["stub"] = FEEDERSTUB;
+//  root["retries"] = 0;
 
   String payload;
   root.printTo(payload);
@@ -235,6 +244,8 @@ int postCachedTrack(String rfid, String datetime) {
   root["datetime"] = datetime;
   root["rfid"] = rfid;
   root["stub"] = FEEDERSTUB;
+  //root["retries"] = 0;
+
 
   String payload;
   root.printTo(payload);
