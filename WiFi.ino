@@ -117,3 +117,10 @@ void loadCredentials() {
   DEBUG_PRINT(WLAN_SSID);
   DEBUG_PRINTLN(strlen(WLAN_PASS) > 0 ? " | ********" : " | <no password>");
 }
+
+void testMode(){
+  DEBUG_PRINTLN("RSSI STRENGTH");
+  long rss = WiFi.RSSI();
+  DEBUG_PRINTLN(rss);
+  //Send RSSI back to sever
+}
