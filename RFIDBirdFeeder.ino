@@ -8,8 +8,11 @@
 #include <TimeLib.h>
 #include "naturewatch_RFID.h"
 
+// PI_BRIDGE - uncomment for wifi settings for programming via serial from the PI Bridge
+#define PI_BRIDGE
+
 // DEBUG - uncomment for debug info via serial
-#define DEBUG
+//#define DEBUG
 
 // Uncomment to send data through LoRa module instead of WiFi.
 //#define LORA
@@ -99,13 +102,16 @@ void setup() {
   digitalWrite(14, HIGH);
 #ifdef DEBUG
   Serial.begin(115200);
-#endif
   DEBUG_PRINTLN(" ");
   DEBUG_PRINT(VERSION);
   DEBUG_PRINT(" | MAC: ");
   DEBUG_PRINTLN(FEEDERSTUB);
   DEBUG_PRINT("Reset reason: ");
   DEBUG_PRINTLN(ESP.getResetReason());
+#elif defined PI_BRIDGE
+  Serial.begin(115200);
+  Serial.println(FEEDERSTUB);
+#endif
 
 #ifdef LORA
   lora.begin(19200);
