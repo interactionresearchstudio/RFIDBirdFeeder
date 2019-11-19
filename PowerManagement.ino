@@ -63,6 +63,7 @@ time_t getUnixTime() {
 
 // UART functions
 void updateUart() {
+
   if (Serial.available() > 0) {
     char inChar = Serial.read();
     if (inChar == 'W') {
@@ -73,12 +74,17 @@ void updateUart() {
 
 // Powerup event
 void powerup() {
-#ifndef LORA
+  
+#ifdef DEBUG
   DEBUG_PRINTLN("Reset from Powerup. Press W to change WiFi credentials...");
   delay(1500);
   updateUart();
   connectToWiFi();
 #endif
+#ifdef PI_BRIDGE
+  readCredentialsFromUart();
+#endif
+
   uint32_t newTime = getTime();
   // If server time has failed, set time to NIGHT_END.
   if (newTime == 0) {
