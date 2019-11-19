@@ -108,7 +108,9 @@ void setup() {
   DEBUG_PRINTLN(FEEDERSTUB);
   DEBUG_PRINT("Reset reason: ");
   DEBUG_PRINTLN(ESP.getResetReason());
-#elif defined PI_BRIDGE
+#endif
+
+#ifdef PI_BRIDGE
   Serial.begin(115200);
   Serial.println(FEEDERSTUB);
 #endif
