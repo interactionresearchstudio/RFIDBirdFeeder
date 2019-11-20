@@ -74,7 +74,7 @@ void updateUart() {
 
 // Powerup event
 void powerup() {
-  
+
 #ifdef DEBUG
   DEBUG_PRINTLN("Reset from Powerup. Press W to change WiFi credentials...");
   delay(1500);
@@ -82,7 +82,9 @@ void powerup() {
   connectToWiFi();
 #endif
 #ifdef PI_BRIDGE
-  readCredentialsFromUart();
+  delay(1500);
+  updateUart();
+  connectToWiFi();
 #endif
 
   uint32_t newTime = getTime();

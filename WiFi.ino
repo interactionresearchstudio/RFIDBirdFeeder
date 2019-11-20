@@ -41,6 +41,9 @@ void connectToWiFi() {
     }
     delay(50);
   }
+#ifdef PI_BRIDGE
+  Serial.println();
+#endif
   DEBUG_PRINTLN("Connected to WiFi.");
   rtcData.channel = WiFi.channel();
   memcpy(rtcData.bssid, WiFi.BSSID(), 6);

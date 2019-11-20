@@ -61,6 +61,7 @@ String getRequest(char* endpoint, String request, int *httpCode, byte maxRetries
 
 // Request data from LoRa base.
 String requestFromRadio(int destinationId, int originId, char command, String message, int timeout, int maxRetries) {
+#ifdef LORA
   String payload =
     String(destinationId) + "," +
     String(originId) + "," +
@@ -104,6 +105,7 @@ String requestFromRadio(int destinationId, int originId, char command, String me
 
   // Return nothing if max retries have run their course.
   return String("");
+#endif
 }
 
 // Check if packet is destined for this feeder and if the checksum is valid.
@@ -153,7 +155,7 @@ String postRequest(char* endpoint, String request, int *httpCode, byte maxRetrie
       result = http.getString();
       DEBUG_PRINTLN(result);
       //test
-    //  testMode();
+      //  testMode();
       return result;
     }
     else {
@@ -219,7 +221,7 @@ void postTrack(String rfid) {
   root["datetime"] = " ";
   root["rfid"] = rfid;
   root["stub"] = FEEDERSTUB;
-//  root["retries"] = 0;
+  //  root["retries"] = 0;
 
   String payload;
   root.printTo(payload);
@@ -444,8 +446,8 @@ void checkForUpdate() {
   WiFiClient client;
 
   ESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
-
-  t_httpUpdate_return ret = ESPhttpUpdate.update(client, "http://feedernet.herokuapp.com/api/update", VERSION);
+String updateHost = (String)HOST + "/api/update";
+  t_httpUpdate_return ret = ESPhttpUpdate.update(client, updateHost, VERSION);
 
   switch (ret) {
     case HTTP_UPDATE_FAILED:

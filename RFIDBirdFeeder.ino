@@ -18,13 +18,13 @@
 //#define LORA
 
 // LoRa software serial
-//#ifdef LORA
+#ifdef LORA
 #include <SoftwareSerial.h>
 SoftwareSerial lora = SoftwareSerial(4, 5);
 #define LORA_REQUEST_TIMEOUT 4000
 #define LORA_REQUEST_ATTEMPTS 3
 #define RADIOID 1
-//#endif
+#endif
 
 // Debug print macros
 #ifdef DEBUG
@@ -58,7 +58,7 @@ String FEEDERSTUB = " ";
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
 #define REQUEST_RETRIES 2
-#define VERSION "v2.0"
+#define VERSION "v2.8"
 
 RFID rfidModule(1.1);
 
@@ -112,6 +112,7 @@ void setup() {
 
 #ifdef PI_BRIDGE
   Serial.begin(115200);
+  Serial.println();
   Serial.println(FEEDERSTUB);
 #endif
 
