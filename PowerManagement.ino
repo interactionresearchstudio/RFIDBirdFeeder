@@ -82,7 +82,7 @@ void powerup() {
   connectToWiFi();
 #endif
 #ifdef PI_BRIDGE
-  delay(1500);
+  delay(5000);
   updateUart();
   connectToWiFi();
 #endif

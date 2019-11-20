@@ -12,7 +12,7 @@
 #define PI_BRIDGE
 
 // DEBUG - uncomment for debug info via serial
-//#define DEBUG
+//define DEBUG
 
 // Uncomment to send data through LoRa module instead of WiFi.
 //#define LORA
@@ -112,7 +112,7 @@ void setup() {
 
 #ifdef PI_BRIDGE
   Serial.begin(115200);
-  Serial.println();
+  Serial.println("ready");
   Serial.println(FEEDERSTUB);
 #endif
 
