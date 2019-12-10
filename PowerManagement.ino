@@ -13,10 +13,12 @@ void moduleLowPower() {
   unsigned long millisCount = millis();
   digitalWrite(14, LOW);
   while (millis() - millisCount < 1000) {
-    rfidModule.isModuleReady();
+    //rfidModule.isModuleReady();
+    isModuleReady();
   }
   digitalWrite(14, HIGH);
-  if (rfidModule.isModuleReady() == false ) {
+  // if (rfidModule.isModuleReady() == false ) {
+  if (isModuleReady() == false ) {
     DEBUG_PRINTLN("Battery too low to operate RFID module");
 #ifndef LORA
     connectToWiFi();
@@ -42,9 +44,7 @@ void updateNightTime() {
       setTime(rtcData.unixTime);
     }
   }
-  updateTime(NIGHT_SLEEP_INTERVAL);
-  writeRTCData();
-  ESP.deepSleepInstant(NIGHT_SLEEP_INTERVAL * 1000);
+
 }
 
 // Update timekeeping (internally)

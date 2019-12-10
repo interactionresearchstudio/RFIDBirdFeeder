@@ -1,26 +1,26 @@
 /****************************************************************************************************
-* rfiduino.h - RFIDuino Library Header File
-* RFID transfer code modified from RFIDuino Library by TrossenRobotics / RobotGeek
-*
+  rfiduino.h - RFIDuino Library Header File
+  RFID transfer code modified from RFIDuino Library by TrossenRobotics / RobotGeek
+
 ****************************************************************************************************/
+/*
+  #include "Arduino.h"
 
-#include "Arduino.h"
+  #ifndef Naturewatch_RFID
+  #define Naturewatch_RFID
 
-#ifndef Naturewatch_RFID
-#define Naturewatch_RFID 
+  #define DELAYVAL    320
+  #define TIMEOUT     400
 
-#define DELAYVAL    320  
-#define TIMEOUT     400  
-
-class RFID
-{
+  class RFID
+  {
   public:
 
     RFID(float verison);
 
-    bool decodeTag(unsigned char *buf); 
+    bool decodeTag(unsigned char *buf);
     void transferToBuffer(byte *tagData, byte *tagDataBuffer);
-    bool compareTagData(byte *tagData1, byte *tagData2);    
+    bool compareTagData(byte *tagData1, byte *tagData2);
 
     bool scanForTag(byte *tagData);
 
@@ -36,6 +36,7 @@ class RFID
 
     bool isHalfRead = false;
 
-};
+  };
 
-#endif
+  #endif
+*/

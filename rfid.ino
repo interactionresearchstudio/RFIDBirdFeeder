@@ -1,14 +1,14 @@
-/****************************************************************************************************
-  rfiduino.h - RFIDuino Library Header File
-  RFID transfer code modified from RFIDuino Library by TrossenRobotics / RobotGeek
 
-****************************************************************************************************/
+#define DELAYVAL    320
+#define TIMEOUT     400
 
-/*
-#include "Arduino.h"
-#include "naturewatch_RFID.h"
+int demodOut;
+int shd;
+int mod;
+int rdyClk;
+bool isHalfRead = false;
 
-RFID::RFID(float version)
+void setupRFID()
 {
   demodOut = 13;
   shd = 14;
@@ -24,7 +24,7 @@ RFID::RFID(float version)
   digitalWrite(shd, LOW);
 }
 
-bool RFID::isModuleReady() {
+bool isModuleReady() {
   static bool moduleOn;
   if (digitalRead(rdyClk) == 1 && moduleOn == false) {
     moduleOn = true;
@@ -37,7 +37,7 @@ bool RFID::isModuleReady() {
   }
 }
 //Manchester decode. Supply the function an array to store the tags ID in
-bool RFID::decodeTag(unsigned char *buf)
+bool decodeTag(unsigned char *buf)
 {
   unsigned char i = 0;
   unsigned short timeCount;
@@ -214,7 +214,7 @@ bool RFID::decodeTag(unsigned char *buf)
 
 
 //function to compare 2 byte arrays. Returns true if the two arrays match, false of any numbers do not match
-bool RFID::compareTagData(byte * tagData1, byte * tagData2)
+bool compareTagData(byte * tagData1, byte * tagData2)
 {
   for (int j = 0; j < 5; j++)
   {
@@ -230,7 +230,7 @@ bool RFID::compareTagData(byte * tagData1, byte * tagData2)
 //function to transfer one byte array to a secondary byte array.
 //source -> tagData
 //destination -> tagDataBuffer
-void RFID::transferToBuffer(byte * tagData, byte * tagDataBuffer)
+void transferToBuffer(byte * tagData, byte * tagDataBuffer)
 {
   for (int j = 0; j < 5; j++)
   {
@@ -238,7 +238,7 @@ void RFID::transferToBuffer(byte * tagData, byte * tagDataBuffer)
   }
 }
 
-bool RFID::scanForTag(byte * tagData)
+bool scanForTag(byte * tagData)
 {
   static byte tagDataBuffer[2][5];      //A Buffer for verifying the tag data. 'static' so that the data is maintained the next time the loop is called
   static int readCount = 0;          //the number of times a tag has been read. 'static' so that the data is maintained the next time the loop is called
@@ -279,12 +279,12 @@ bool RFID::scanForTag(byte * tagData)
   else
   {
     if (millis() > 80 && isHalfRead == false) {
-      digitalWrite(14,1);
-      //updateTime(1000);
-    //  writeRTCData();
-      ESP.deepSleepInstant(4000 * 1000);
+      digitalWrite(14, 1);
+      updateTime(SLEEP_INTERVAL);
+      writeRTCData();
+      ESP.deepSleepInstant(SLEEP_INTERVAL * 1000);
     }
+
     return false;
   }
 }
-*/

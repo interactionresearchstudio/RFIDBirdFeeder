@@ -47,7 +47,7 @@ SoftwareSerial lora = SoftwareSerial(4, 5);
 // CONFIG DEFINES
 char WLAN_SSID[32];
 char WLAN_PASS[32];
-#define HOST "http://192.168.4.1"
+#define HOST "http://raspberrypi.local"
 String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 4000
@@ -60,7 +60,7 @@ String FEEDERSTUB = " ";
 #define REQUEST_RETRIES 2
 #define VERSION "v3"
 
-RFID rfidModule(1.1);
+//RFID rfidModule(1.1);
 
 // RTC data
 struct {
@@ -97,6 +97,7 @@ const char* lon = "";
 byte tagData[5];
 
 void setup() {
+  setupRFID();
   FEEDERSTUB = WiFi.macAddress();
   WiFi.mode(WIFI_OFF);
   digitalWrite(14, HIGH);
@@ -169,6 +170,6 @@ void setup() {
 
 void loop() {
   updateRfid();
-  rfidModule.isModuleReady();
-  updateSleep();
+  isModuleReady();
+  yield();
 }
