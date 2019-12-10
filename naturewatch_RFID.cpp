@@ -36,7 +36,6 @@ bool RFID::isModuleReady() {
     return true;
   }
 }
-
 //Manchester decode. Supply the function an array to store the tags ID in
 bool RFID::decodeTag(unsigned char *buf)
 {
@@ -215,7 +214,7 @@ bool RFID::decodeTag(unsigned char *buf)
 
 
 //function to compare 2 byte arrays. Returns true if the two arrays match, false of any numbers do not match
-bool RFID::compareTagData(byte *tagData1, byte *tagData2)
+bool RFID::compareTagData(byte * tagData1, byte * tagData2)
 {
   for (int j = 0; j < 5; j++)
   {
@@ -231,7 +230,7 @@ bool RFID::compareTagData(byte *tagData1, byte *tagData2)
 //function to transfer one byte array to a secondary byte array.
 //source -> tagData
 //destination -> tagDataBuffer
-void RFID::transferToBuffer(byte *tagData, byte *tagDataBuffer)
+void RFID::transferToBuffer(byte * tagData, byte * tagDataBuffer)
 {
   for (int j = 0; j < 5; j++)
   {
@@ -239,7 +238,7 @@ void RFID::transferToBuffer(byte *tagData, byte *tagDataBuffer)
   }
 }
 
-bool RFID::scanForTag(byte *tagData)
+bool RFID::scanForTag(byte * tagData)
 {
   static byte tagDataBuffer[2][5];      //A Buffer for verifying the tag data. 'static' so that the data is maintained the next time the loop is called
   static int readCount = 0;          //the number of times a tag has been read. 'static' so that the data is maintained the next time the loop is called
@@ -278,6 +277,7 @@ bool RFID::scanForTag(byte *tagData)
   }
   else
   {
+
     return false;
   }
 }

@@ -10,7 +10,7 @@
 #define Naturewatch_RFID 
 
 #define DELAYVAL    320  
-#define TIMEOUT     1000  
+#define TIMEOUT     500  
 
 class RFID
 {
@@ -23,6 +23,7 @@ class RFID
     bool compareTagData(byte *tagData1, byte *tagData2);    
 
     bool scanForTag(byte *tagData);
+
 
     bool isModuleReady();
 
