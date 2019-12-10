@@ -55,7 +55,5 @@ void updateRfid() {
       rtcData.previousTag[i] = tagData[i];
     }
     rtcData.previousTagTime = getUnixTime();
-  } else {
-    updateSleep();
   }
 }

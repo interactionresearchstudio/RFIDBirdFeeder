@@ -10,7 +10,7 @@
 #define Naturewatch_RFID 
 
 #define DELAYVAL    320  
-#define TIMEOUT     500  
+#define TIMEOUT     400  
 
 class RFID
 {
@@ -27,13 +27,14 @@ class RFID
 
     bool isModuleReady();
 
-
   private:
 
     int demodOut;
     int shd;
     int mod;
     int rdyClk;
+
+    bool isHalfRead = false;
 
 };
 

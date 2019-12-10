@@ -47,7 +47,7 @@ SoftwareSerial lora = SoftwareSerial(4, 5);
 // CONFIG DEFINES
 char WLAN_SSID[32];
 char WLAN_PASS[32];
-#define HOST "http://feedernet.herokuapkp.com"
+#define HOST "http://192.168.4.1"
 String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 4000

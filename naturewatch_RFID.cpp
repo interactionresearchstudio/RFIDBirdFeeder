@@ -248,6 +248,7 @@ bool RFID::scanForTag(byte * tagData)
   tagCheck = decodeTag(tagData); //run the decodetag to check for the tag
   if (tagCheck == true) //if 'true' is returned from the decodetag function, a tag was succesfully scanned
   {
+    isHalfRead = true;
     readCount++;      //increase count since we've seen a tag
     switch (readCount) {
       default:
@@ -277,7 +278,12 @@ bool RFID::scanForTag(byte * tagData)
   }
   else
   {
-
+    if (millis() > 80 && isHalfRead == false) {
+      digitalWrite(14,1);
+      //updateTime(1000);
+    //  writeRTCData();
+      ESP.deepSleepInstant(4000 * 1000);
+    }
     return false;
   }
 }
