@@ -278,7 +278,7 @@ bool scanForTag(byte * tagData)
   }
   else
   {
-    if (millis() > 80 && isHalfRead == false) {
+    if (millis() > WAKE_INTERVAL && isHalfRead == false) {
       digitalWrite(14, 1);
       updateTime(SLEEP_INTERVAL);
       writeRTCData();

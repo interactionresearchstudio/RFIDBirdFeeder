@@ -13,11 +13,9 @@ void moduleLowPower() {
   unsigned long millisCount = millis();
   digitalWrite(14, LOW);
   while (millis() - millisCount < 1000) {
-    //rfidModule.isModuleReady();
     isModuleReady();
   }
   digitalWrite(14, HIGH);
-  // if (rfidModule.isModuleReady() == false ) {
   if (isModuleReady() == false ) {
     DEBUG_PRINTLN("Battery too low to operate RFID module");
 #ifndef LORA
