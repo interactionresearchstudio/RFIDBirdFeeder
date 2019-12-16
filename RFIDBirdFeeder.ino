@@ -9,10 +9,10 @@
 #include "naturewatch_RFID.h"
 
 // PI_BRIDGE - uncomment for wifi settings for programming via serial from the PI Bridge
-//#define PI_BRIDGE
+#define PI_BRIDGE
 
 // DEBUG - uncomment for debug info via serial
-#define DEBUG
+//#define DEBUG
 
 // Uncomment to send data through LoRa module instead of WiFi.
 //#define LORA

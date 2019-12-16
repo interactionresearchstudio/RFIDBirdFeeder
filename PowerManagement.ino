@@ -117,7 +117,6 @@ void powerup() {
 #ifndef LORA
   checkForUpdate();
 #endif
-  moduleLowPower();
 }
 
 // Pre-sleep event
@@ -144,7 +143,7 @@ void prepareForSleep() {
 #ifndef LORA
   syncCache();
 #endif
-  moduleLowPower();
+
 }
 
 // Post-sleep event
@@ -172,7 +171,6 @@ void prepareForDaytime() {
   DEBUG_PRINTLN(minute());
   getSunriseSunset();
   sendPing();
-  moduleLowPower();
   rtcData.sleeping = 0;
 }
 

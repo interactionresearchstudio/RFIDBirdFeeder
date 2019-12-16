@@ -214,14 +214,14 @@ void postTrack(String rfid) {
   requestFromRadio(100, RADIOID, 'R', rfid, LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
   //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
 #else
-  const size_t bufferSize = JSON_OBJECT_SIZE(3);
+  const size_t bufferSize = JSON_OBJECT_SIZE(4);
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
   JsonObject& root = jsonBuffer.createObject();
   root["datetime"] = " ";
   root["rfid"] = rfid;
   root["stub"] = FEEDERSTUB;
-  //  root["retries"] = 0;
+  root["rssi"] = WiFi.RSSI();
 
   String payload;
   root.printTo(payload);
@@ -292,12 +292,13 @@ void sendPowerup() {
   requestFromRadio(100, RADIOID, 'U', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
   //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
 #else
-  const size_t bufferSize = JSON_OBJECT_SIZE(2);
+  const size_t bufferSize = JSON_OBJECT_SIZE(3);
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
   JsonObject& root = jsonBuffer.createObject();
   root["stub"] = FEEDERSTUB;
   root["type"] = "powerup";
+  root["rssi"] = WiFi.RSSI();
 
   String payload;
   root.printTo(payload);
@@ -446,7 +447,7 @@ void checkForUpdate() {
   WiFiClient client;
 
   ESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
-String updateHost = (String)HOST + "/api/update";
+  String updateHost = (String)HOST + "/api/update";
   t_httpUpdate_return ret = ESPhttpUpdate.update(client, updateHost, VERSION);
 
   switch (ret) {
