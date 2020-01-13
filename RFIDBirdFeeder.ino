@@ -44,7 +44,7 @@ SoftwareSerial lora = SoftwareSerial(4, 5);
 // CONFIG DEFINES
 char WLAN_SSID[32];
 char WLAN_PASS[32];
-#define HOST "http://raspberrypi.local:4000"
+#define HOST "http://feedernet.herokuapp.com"
 String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 4000
@@ -55,7 +55,7 @@ String FEEDERSTUB = " ";
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
 #define REQUEST_RETRIES 2
-#define VERSION "v2.0"
+#define VERSION "v1.6"
 
 RFID rfidModule(1.1);
 
