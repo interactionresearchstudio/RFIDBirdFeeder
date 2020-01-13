@@ -28,8 +28,8 @@ void moduleLowPower() {
 // Main night-time routine
 void updateNightTime() {
   // Check if it's one hour before wake-up
-  rtcData.sleeping = 1;
   if (hour() == rtcData.NIGHT_END_HOUR - 1 && minute() == 45) {
+    rtcData.sleeping = 1;
     DEBUG_PRINTLN("Getting time before wake-up...");
 #ifndef LORA
     connectToWiFi();

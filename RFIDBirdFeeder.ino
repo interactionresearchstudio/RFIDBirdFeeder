@@ -58,7 +58,7 @@ String FEEDERSTUB = " ";
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
 #define REQUEST_RETRIES 2
-#define VERSION "v1.7"
+#define VERSION "v1.8"
 
 //RFID rfidModule(1.1);
 
