@@ -61,6 +61,7 @@ String getRequest(char* endpoint, String request, int *httpCode, byte maxRetries
 
 // Request data from LoRa base.
 String requestFromRadio(int destinationId, int originId, char command, String message, int timeout, int maxRetries) {
+#ifdef LORA
   String payload =
     String(destinationId) + "," +
     String(originId) + "," +
@@ -104,6 +105,7 @@ String requestFromRadio(int destinationId, int originId, char command, String me
 
   // Return nothing if max retries have run their course.
   return String("");
+#endif
 }
 
 // Check if packet is destined for this feeder and if the checksum is valid.
@@ -153,7 +155,7 @@ String postRequest(char* endpoint, String request, int *httpCode, byte maxRetrie
       result = http.getString();
       DEBUG_PRINTLN(result);
       //test
-    //  testMode();
+      //  testMode();
       return result;
     }
     else {
@@ -212,14 +214,14 @@ void postTrack(String rfid) {
   requestFromRadio(100, RADIOID, 'R', rfid, LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
   //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
 #else
-  const size_t bufferSize = JSON_OBJECT_SIZE(3);
+  const size_t bufferSize = JSON_OBJECT_SIZE(4);
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
   JsonObject& root = jsonBuffer.createObject();
   root["datetime"] = " ";
   root["rfid"] = rfid;
   root["stub"] = FEEDERSTUB;
-//  root["retries"] = 0;
+  root["rssi"] = WiFi.RSSI();
 
   String payload;
   root.printTo(payload);
@@ -290,12 +292,13 @@ void sendPowerup() {
   requestFromRadio(100, RADIOID, 'U', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
   //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
 #else
-  const size_t bufferSize = JSON_OBJECT_SIZE(2);
+  const size_t bufferSize = JSON_OBJECT_SIZE(3);
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
   JsonObject& root = jsonBuffer.createObject();
   root["stub"] = FEEDERSTUB;
   root["type"] = "powerup";
+  root["rssi"] = WiFi.RSSI();
 
   String payload;
   root.printTo(payload);
@@ -444,8 +447,8 @@ void checkForUpdate() {
   WiFiClient client;
 
   ESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
-
-  t_httpUpdate_return ret = ESPhttpUpdate.update(client, "http://feedernet.herokuapp.com/api/update", VERSION);
+  String updateHost = (String)HOST + "/api/update";
+  t_httpUpdate_return ret = ESPhttpUpdate.update(client, updateHost, VERSION);
 
   switch (ret) {
     case HTTP_UPDATE_FAILED:

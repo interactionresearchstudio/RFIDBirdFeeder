@@ -41,6 +41,9 @@ void connectToWiFi() {
     }
     delay(50);
   }
+#ifdef PI_BRIDGE
+  Serial.println();
+#endif
   DEBUG_PRINTLN("Connected to WiFi.");
   rtcData.channel = WiFi.channel();
   memcpy(rtcData.bssid, WiFi.BSSID(), 6);
@@ -51,7 +54,9 @@ void readCredentialsFromUart() {
   pinMode(2, OUTPUT);
   digitalWrite(2, HIGH);
   Serial.flush();
+#ifndef PI_BRIDGE
   Serial.print("Please insert new SSID: ");
+#endif
   String ssid, password;
   boolean foundReturn = false;
   while (!foundReturn) {
@@ -59,26 +64,36 @@ void readCredentialsFromUart() {
       char inChar = Serial.read();
       if (inChar == '\r') {
         foundReturn = true;
+#ifndef PI_BRIDGE
         Serial.println();
+#endif
       }
       else {
         ssid += inChar;
+#ifndef PI_BRIDGE
         Serial.print(inChar);
+#endif
       }
     }
   }
+#ifndef PI_BRIDGE
   Serial.print("Please insert new password: ");
+#endif
   foundReturn = false;
   while (!foundReturn) {
     if (Serial.available() > 0) {
       char inChar = Serial.read();
       if (inChar == '\r') {
         foundReturn = true;
+#ifndef PI_BRIDGE
         Serial.println();
+#endif
       }
       else {
         password += inChar;
+#ifndef PI_BRIDGE
         Serial.print(inChar);
+#endif
       }
     }
   }
@@ -118,7 +133,7 @@ void loadCredentials() {
   DEBUG_PRINTLN(strlen(WLAN_PASS) > 0 ? " | ********" : " | <no password>");
 }
 
-void testMode(){
+void testMode() {
   DEBUG_PRINTLN("RSSI STRENGTH");
   long rss = WiFi.RSSI();
   DEBUG_PRINTLN(rss);

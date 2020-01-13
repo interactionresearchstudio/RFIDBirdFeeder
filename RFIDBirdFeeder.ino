@@ -8,6 +8,9 @@
 #include <TimeLib.h>
 #include "naturewatch_RFID.h"
 
+// PI_BRIDGE - uncomment for wifi settings for programming via serial from the PI Bridge
+//#define PI_BRIDGE
+
 // DEBUG - uncomment for debug info via serial
 #define DEBUG
 
@@ -15,13 +18,13 @@
 //#define LORA
 
 // LoRa software serial
-//#ifdef LORA
+#ifdef LORA
 #include <SoftwareSerial.h>
 SoftwareSerial lora = SoftwareSerial(4, 5);
 #define LORA_REQUEST_TIMEOUT 4000
 #define LORA_REQUEST_ATTEMPTS 3
 #define RADIOID 1
-//#endif
+#endif
 
 // Debug print macros
 #ifdef DEBUG
@@ -44,20 +47,20 @@ SoftwareSerial lora = SoftwareSerial(4, 5);
 // CONFIG DEFINES
 char WLAN_SSID[32];
 char WLAN_PASS[32];
-#define HOST "http://raspberrypi.local:4000"
+#define HOST "http://feedernet.herokuapp.com"
 String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 4000
-#define WAKE_INTERVAL 250
+#define WAKE_INTERVAL 100
 #define NIGHT_SLEEP_INTERVAL 24000
 #define WIFI_QUICK_MAX_RETRIES 100
 #define WIFI_REGULAR_MAX_RETRIES 600
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
 #define REQUEST_RETRIES 2
-#define VERSION "v2.0"
+#define VERSION "v1.7"
 
-RFID rfidModule(1.1);
+//RFID rfidModule(1.1);
 
 // RTC data
 struct {
@@ -94,18 +97,25 @@ const char* lon = "";
 byte tagData[5];
 
 void setup() {
+  setupRFID();
   FEEDERSTUB = WiFi.macAddress();
   WiFi.mode(WIFI_OFF);
   digitalWrite(14, HIGH);
 #ifdef DEBUG
   Serial.begin(115200);
-#endif
   DEBUG_PRINTLN(" ");
   DEBUG_PRINT(VERSION);
   DEBUG_PRINT(" | MAC: ");
   DEBUG_PRINTLN(FEEDERSTUB);
   DEBUG_PRINT("Reset reason: ");
   DEBUG_PRINTLN(ESP.getResetReason());
+#endif
+
+#ifdef PI_BRIDGE
+  Serial.begin(115200);
+  Serial.println("ready");
+  Serial.println(FEEDERSTUB);
+#endif
 
 #ifdef LORA
   lora.begin(19200);
@@ -160,6 +170,6 @@ void setup() {
 
 void loop() {
   updateRfid();
-  rfidModule.isModuleReady();
-  updateSleep();
+  isModuleReady();
+  yield();
 }

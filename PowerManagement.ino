@@ -13,10 +13,10 @@ void moduleLowPower() {
   unsigned long millisCount = millis();
   digitalWrite(14, LOW);
   while (millis() - millisCount < 1000) {
-    rfidModule.isModuleReady();
+    isModuleReady();
   }
   digitalWrite(14, HIGH);
-  if (rfidModule.isModuleReady() == false ) {
+  if (isModuleReady() == false ) {
     DEBUG_PRINTLN("Battery too low to operate RFID module");
 #ifndef LORA
     connectToWiFi();
@@ -42,9 +42,7 @@ void updateNightTime() {
       setTime(rtcData.unixTime);
     }
   }
-  updateTime(NIGHT_SLEEP_INTERVAL);
-  writeRTCData();
-  ESP.deepSleepInstant(NIGHT_SLEEP_INTERVAL * 1000);
+
 }
 
 // Update timekeeping (internally)
@@ -63,6 +61,7 @@ time_t getUnixTime() {
 
 // UART functions
 void updateUart() {
+
   if (Serial.available() > 0) {
     char inChar = Serial.read();
     if (inChar == 'W') {
@@ -73,12 +72,19 @@ void updateUart() {
 
 // Powerup event
 void powerup() {
-#ifndef LORA
+
+#ifdef DEBUG
   DEBUG_PRINTLN("Reset from Powerup. Press W to change WiFi credentials...");
   delay(1500);
   updateUart();
   connectToWiFi();
 #endif
+#ifdef PI_BRIDGE
+  delay(5000);
+  updateUart();
+  connectToWiFi();
+#endif
+
   uint32_t newTime = getTime();
   // If server time has failed, set time to NIGHT_END.
   if (newTime == 0) {
@@ -111,7 +117,6 @@ void powerup() {
 #ifndef LORA
   checkForUpdate();
 #endif
-  moduleLowPower();
 }
 
 // Pre-sleep event
@@ -138,7 +143,7 @@ void prepareForSleep() {
 #ifndef LORA
   syncCache();
 #endif
-  moduleLowPower();
+
 }
 
 // Post-sleep event
@@ -166,7 +171,6 @@ void prepareForDaytime() {
   DEBUG_PRINTLN(minute());
   getSunriseSunset();
   sendPing();
-  moduleLowPower();
   rtcData.sleeping = 0;
 }
 

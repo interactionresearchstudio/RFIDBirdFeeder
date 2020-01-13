@@ -2,7 +2,7 @@
 void updateRfid() {
 
   //scan for a tag - if a tag is sucesfully scanned, return a 'true' and proceed
-  if (rfidModule.scanForTag(tagData) == true)
+  if  (scanForTag(tagData) == true)
   {
     digitalWrite(14, 1);
     DEBUG_PRINTLN("RFID Tag ID:"); //print a header to the Serial port.
@@ -43,18 +43,22 @@ void updateRfid() {
         DEBUG_PRINTLN("Same tag");
         if (now() - rtcData.previousTagTime < TAG_DEBOUNCE) {
           DEBUG_PRINTLN("Same tag within minute");
+          updateTime(SLEEP_INTERVAL);
+          writeRTCData();
+          ESP.deepSleepInstant(SLEEP_INTERVAL * 1000);
           return;
         }
       }
     }
 #ifndef LORA
     connectToWiFi();
+    DEBUG_PRINTLN("connecting to wifi");
 #endif
     postTrack(rfid);
     for (int i = 0; i < 5; i++) {
       rtcData.previousTag[i] = tagData[i];
     }
     rtcData.previousTagTime = getUnixTime();
-    digitalWrite(14, 0);
+    updateSleep();
   }
 }
