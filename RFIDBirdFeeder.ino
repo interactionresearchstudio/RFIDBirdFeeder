@@ -52,7 +52,7 @@ String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 4000
 #define WAKE_INTERVAL 100
-#define NIGHT_SLEEP_INTERVAL 900000
+#define NIGHT_SLEEP_INTERVAL 45000
 #define WIFI_QUICK_MAX_RETRIES 100
 #define WIFI_REGULAR_MAX_RETRIES 600
 #define TAG_DEBOUNCE 60
@@ -144,6 +144,7 @@ void setup() {
     updateNightTime();
   }
 
+//TODO : Make this only happen once by adding a isTimeSynced rtcdata flag 
   // Time sync before sleep
   if (hour() == rtcData.NIGHT_START_HOUR && rtcData.NIGHT_START_MINUTE > 15 && minute() == rtcData.NIGHT_START_MINUTE - 15 ) {
     prepareForSleep();
@@ -151,6 +152,7 @@ void setup() {
     prepareForSleep();
   }
 
+//TODO : Make this only happen once
   // Check if awaken from night time.
   if (rtcData.sleeping == 1) {
     prepareForDaytime();
