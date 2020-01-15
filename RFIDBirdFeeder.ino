@@ -47,7 +47,7 @@ SoftwareSerial lora = SoftwareSerial(4, 5);
 // CONFIG DEFINES
 char WLAN_SSID[32];
 char WLAN_PASS[32];
-#define HOST "http://feedernet.herokuapp.com"
+#define HOST "http://feedernet-staging.herokuapp.com"
 String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 4000
@@ -58,7 +58,7 @@ String FEEDERSTUB = " ";
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
 #define REQUEST_RETRIES 2
-#define VERSION "v1.81"
+#define VERSION "v1.83"
 
 //RFID rfidModule(1.1);
 
@@ -126,6 +126,8 @@ void setup() {
 
   if (ESP.getResetReason() != "Deep-Sleep Wake") {
     powerup();
+    rtcData.sleeping = 0;
+    writeRTCData();
   }
 
   DEBUG_PRINT(hour());
@@ -144,7 +146,7 @@ void setup() {
     updateNightTime();
   }
 
-//TODO : Make this only happen once by adding a isTimeSynced rtcdata flag 
+  //TODO : Make this only happen once by adding a isTimeSynced rtcdata flag
   // Time sync before sleep
   if (hour() == rtcData.NIGHT_START_HOUR && rtcData.NIGHT_START_MINUTE > 15 && minute() == rtcData.NIGHT_START_MINUTE - 15 ) {
     prepareForSleep();
@@ -152,7 +154,6 @@ void setup() {
     prepareForSleep();
   }
 
-//TODO : Make this only happen once
   // Check if awaken from night time.
   if (rtcData.sleeping == 1) {
     prepareForDaytime();

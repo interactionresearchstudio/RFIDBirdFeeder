@@ -28,8 +28,9 @@ void moduleLowPower() {
 // Main night-time routine
 void updateNightTime() {
   // Check if it's one hour before wake-up
-  if (hour() == rtcData.NIGHT_END_HOUR - 1 && minute() == 45) {
+  if (hour() == rtcData.NIGHT_END_HOUR - 1 && minute() >= 55 && rtcData.sleeping == 0) {
     rtcData.sleeping = 1;
+    writeRTCData();
     DEBUG_PRINTLN("Getting time before wake-up...");
 #ifndef LORA
     connectToWiFi();
@@ -176,6 +177,9 @@ void prepareForDaytime() {
   getSunriseSunset();
   sendPing();
   rtcData.sleeping = 0;
+  updateTime(300000);
+  writeRTCData();
+  ESP.deepSleep(300000 * 1000);
 }
 
 // Try to resync time with server in the event of a time error.
