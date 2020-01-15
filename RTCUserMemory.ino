@@ -30,7 +30,7 @@ void readRTCData() {
     DEBUG_PRINT("CRC32 read from RTC: ");
     DEBUG_PRINTHEX(rtcData.crc32);
     DEBUG_PRINTLN("");
-    
+
     if (crcOfData != rtcData.crc32) {
       DEBUG_PRINTLN("CRC32 in RTC memory doesn't match CRC32 of data. Data is invalid!");
       rtcValid = false;
@@ -47,6 +47,7 @@ void writeRTCData() {
   if (ESP.rtcUserMemoryWrite(0, (uint32_t*) &rtcData, sizeof(rtcData))) {
     DEBUG_PRINTLN("Written to RTC user memory.");
   }
+  yield();
 }
 
 // Update CRC32 validator.

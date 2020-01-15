@@ -4,7 +4,7 @@ void updateSleep() {
   if (millis() >= WAKE_INTERVAL) {
     updateTime(SLEEP_INTERVAL);
     writeRTCData();
-    ESP.deepSleepInstant(SLEEP_INTERVAL * 1000);
+    ESP.deepSleep(SLEEP_INTERVAL * 1000);
   }
 }
 
@@ -42,6 +42,9 @@ void updateNightTime() {
       setTime(rtcData.unixTime);
     }
   }
+  updateTime(NIGHT_SLEEP_INTERVAL);
+  writeRTCData();
+  ESP.deepSleep(NIGHT_SLEEP_INTERVAL * 1000);
 
 }
 
@@ -53,6 +56,7 @@ void updateTime(uint32_t sleepInterval) {
   rtcData.unixTimeRemainder = modulo;
   DEBUG_PRINT("Time remainder: ");
   DEBUG_PRINTLN(rtcData.unixTimeRemainder);
+  yield();
 }
 
 time_t getUnixTime() {

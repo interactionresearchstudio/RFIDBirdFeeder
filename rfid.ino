@@ -1,12 +1,14 @@
 
 #define DELAYVAL    320
-#define TIMEOUT     400
+#define TIMEOUT     600
 
 int demodOut;
 int shd;
 int mod;
 int rdyClk;
 bool isHalfRead = false;
+byte tagDataBuffer[2][5];      //A Buffer for verifying the tag data.
+int readCount = 0;          //the number of times a tag has been read. 
 
 void setupRFID()
 {
@@ -48,6 +50,7 @@ bool decodeTag(unsigned char *buf)
   unsigned char dat;
   unsigned char searchCount = 0;
   unsigned char j;
+
   while (1)
   {
     timeCount = 0;
@@ -208,7 +211,8 @@ bool decodeTag(unsigned char *buf)
 
     }//if(digitalRead(demodOut))
   } //while(1)
-};
+
+}
 
 
 
@@ -238,10 +242,11 @@ void transferToBuffer(byte * tagData, byte * tagDataBuffer)
   }
 }
 
+
 bool scanForTag(byte * tagData)
 {
-  static byte tagDataBuffer[2][5];      //A Buffer for verifying the tag data. 'static' so that the data is maintained the next time the loop is called
-  static int readCount = 0;          //the number of times a tag has been read. 'static' so that the data is maintained the next time the loop is called
+
+
   boolean verifyRead = false; //true when a tag's ID matches a previous read, false otherwise
   boolean tagCheck = false;   //true when a tag has been read, false otherwise
 
@@ -260,7 +265,7 @@ bool scanForTag(byte * tagData)
         transferToBuffer(tagData, tagDataBuffer[1]);
         break;
     }
-    if (readCount == 3) {
+    if (readCount >= 3) {
       for (byte i = 0; i < 2; i++) {
         verifyRead = compareTagData(tagData, tagDataBuffer[i]);
         if (verifyRead == false) {
@@ -282,9 +287,8 @@ bool scanForTag(byte * tagData)
       digitalWrite(14, 1);
       updateTime(SLEEP_INTERVAL);
       writeRTCData();
-      ESP.deepSleepInstant(SLEEP_INTERVAL * 1000);
+      ESP.deepSleep(SLEEP_INTERVAL * 1000);
     }
-
     return false;
   }
 }

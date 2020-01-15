@@ -45,7 +45,7 @@ void updateRfid() {
           DEBUG_PRINTLN("Same tag within minute");
           updateTime(SLEEP_INTERVAL);
           writeRTCData();
-          ESP.deepSleepInstant(SLEEP_INTERVAL * 1000);
+          ESP.deepSleep(SLEEP_INTERVAL * 1000);
           return;
         }
       }
