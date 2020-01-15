@@ -11,7 +11,7 @@ void updateSleep() {
 //Check if battery is too low to operate RFID module
 void moduleLowPower() {
   unsigned long millisCount = millis();
-  digitalWrite(14, LOW);
+  digitalWrite(14, HIGH);
   while (millis() - millisCount < 1000) {
     isModuleReady();
   }

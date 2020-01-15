@@ -97,10 +97,12 @@ const char* lon = "";
 byte tagData[5];
 
 void setup() {
+  digitalWrite(14, HIGH);
   setupRFID();
+
   FEEDERSTUB = WiFi.macAddress();
   WiFi.mode(WIFI_OFF);
-  digitalWrite(14, HIGH);
+
 #ifdef DEBUG
   Serial.begin(115200);
   DEBUG_PRINTLN(" ");
@@ -146,6 +148,7 @@ void setup() {
     updateNightTime();
   }
 
+
   //TODO : Make this only happen once by adding a isTimeSynced rtcdata flag
   // Time sync before sleep
   if (hour() == rtcData.NIGHT_START_HOUR && rtcData.NIGHT_START_MINUTE > 15 && minute() == rtcData.NIGHT_START_MINUTE - 15 ) {
@@ -166,7 +169,6 @@ void setup() {
       resyncTime();
     }
   }
-
   // Turn on RFID
   digitalWrite(14, LOW);
 }

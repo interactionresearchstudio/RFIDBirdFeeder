@@ -19,11 +19,6 @@ void setupRFID()
   pinMode(shd, OUTPUT);
   pinMode(demodOut, INPUT);
   pinMode(rdyClk, INPUT);
-
-  //set shd low to prepare for reading
-  digitalWrite(shd, HIGH);
-  //  digitalWrite(mod, LOW);
-  digitalWrite(shd, LOW);
 }
 
 bool isModuleReady() {
