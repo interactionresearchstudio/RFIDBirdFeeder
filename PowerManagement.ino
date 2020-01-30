@@ -28,8 +28,14 @@ void moduleLowPower() {
 // Main night-time routine
 void updateNightTime() {
   // Check if it's one hour before wake-up
+<<<<<<< Updated upstream
   rtcData.sleeping = 1;
   if (hour() == rtcData.NIGHT_END_HOUR - 1 && minute() == 45) {
+=======
+  if (hour() == rtcData.NIGHT_END_HOUR - 1 && rtcData.sleeping == 0) {
+    rtcData.sleeping = 1;
+    writeRTCData();
+>>>>>>> Stashed changes
     DEBUG_PRINTLN("Getting time before wake-up...");
 #ifndef LORA
     connectToWiFi();
@@ -42,6 +48,13 @@ void updateNightTime() {
       setTime(rtcData.unixTime);
     }
   }
+<<<<<<< Updated upstream
+=======
+
+  updateTime(NIGHT_SLEEP_INTERVAL);
+  writeRTCData();
+  ESP.deepSleep(NIGHT_SLEEP_INTERVAL * 1000);
+>>>>>>> Stashed changes
 
 }
 
@@ -144,6 +157,10 @@ void prepareForSleep() {
   syncCache();
 #endif
 
+  //sleep for a minute to prevent multiple ping
+  updateTime(60000);
+  writeRTCData();
+  ESP.deepSleep(60000 * 1000);
 }
 
 // Post-sleep event
@@ -171,7 +188,23 @@ void prepareForDaytime() {
   DEBUG_PRINTLN(minute());
   getSunriseSunset();
   sendPing();
+<<<<<<< Updated upstream
   rtcData.sleeping = 0;
+=======
+
+  if (hour() == rtcData.NIGHT_END_HOUR) {
+    rtcData.sleeping = 0;
+    writeRTCData();
+  } else if (hour() == rtcData.NIGHT_END_HOUR - 1) {
+    //make sure the next time it wakes up it's morning
+    rtcData.sleeping = 0;
+    int lastSleepTime = 60 - minute();
+    lastSleepTime = lastSleepTime * 1000;
+    updateTime(lastSleepTime);
+    writeRTCData();
+    ESP.deepSleep(lastSleepTime * 1000);
+  }
+>>>>>>> Stashed changes
 }
 
 // Try to resync time with server in the event of a time error.

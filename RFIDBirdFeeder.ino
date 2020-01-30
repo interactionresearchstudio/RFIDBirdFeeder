@@ -47,12 +47,21 @@ SoftwareSerial lora = SoftwareSerial(4, 5);
 // CONFIG DEFINES
 char WLAN_SSID[32];
 char WLAN_PASS[32];
+<<<<<<< Updated upstream
 #define HOST "http://feedernet.herokuapp.com"
+=======
+#define HOST "http://feedernet-staging.herokuapp.com"
+//#define HOST "http://raspberrypi.local"
+>>>>>>> Stashed changes
 String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 4000
 #define WAKE_INTERVAL 100
+<<<<<<< Updated upstream
 #define NIGHT_SLEEP_INTERVAL 24000
+=======
+#define NIGHT_SLEEP_INTERVAL 3300000
+>>>>>>> Stashed changes
 #define WIFI_QUICK_MAX_RETRIES 100
 #define WIFI_REGULAR_MAX_RETRIES 600
 #define TAG_DEBOUNCE 60
@@ -134,12 +143,19 @@ void setup() {
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(second());
 
+  // Check if awaken from night time.
+  if (rtcData.sleeping == 1) {
+    prepareForDaytime();
+  }
+
   // Night time
-  if (hour() >= rtcData.NIGHT_START_HOUR && hour() <= 23) {
+  if (hour() == rtcData.NIGHT_START_HOUR && minute() > rtcData.NIGHT_START_MINUTE ) {
     DEBUG_PRINTLN("Night time detected.");
     updateNightTime();
-  }
-  if (hour() >= 0 && hour() < rtcData.NIGHT_END_HOUR) {
+  } else if (hour() > rtcData.NIGHT_START_HOUR && hour() < 23) {
+    DEBUG_PRINTLN("Night time detected.");
+    updateNightTime();
+  } else if (hour() >= 0 && hour() < rtcData.NIGHT_END_HOUR) {
     DEBUG_PRINTLN("Night time detected - past midnight");
     updateNightTime();
   }
@@ -149,11 +165,6 @@ void setup() {
     prepareForSleep();
   } else if (rtcData.NIGHT_START_MINUTE < 15 && hour() == rtcData.NIGHT_START_HOUR - 1 && minute() == rtcData.NIGHT_START_MINUTE + 45) {
     prepareForSleep();
-  }
-
-  // Check if awaken from night time.
-  if (rtcData.sleeping == 1) {
-    prepareForDaytime();
   }
 
   // Check if time error exists
