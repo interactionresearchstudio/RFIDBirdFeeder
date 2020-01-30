@@ -1,17 +1,16 @@
-
 // Main daytime routine
 void updateSleep() {
   if (millis() >= WAKE_INTERVAL) {
     updateTime(SLEEP_INTERVAL);
     writeRTCData();
-    ESP.deepSleep(SLEEP_INTERVAL * 1000);
+    ESP.deepSleepInstant(SLEEP_INTERVAL * 1000);
   }
 }
 
 //Check if battery is too low to operate RFID module
 void moduleLowPower() {
   unsigned long millisCount = millis();
-  digitalWrite(14, HIGH);
+  digitalWrite(14, LOW);
   while (millis() - millisCount < 1000) {
     isModuleReady();
   }
@@ -28,7 +27,7 @@ void moduleLowPower() {
 // Main night-time routine
 void updateNightTime() {
   // Check if it's one hour before wake-up
-  if (hour() == rtcData.NIGHT_END_HOUR - 1 && minute() >= 55 && rtcData.sleeping == 0) {
+  if (hour() == rtcData.NIGHT_END_HOUR - 1 && rtcData.sleeping == 0) {
     rtcData.sleeping = 1;
     writeRTCData();
     DEBUG_PRINTLN("Getting time before wake-up...");
@@ -45,7 +44,7 @@ void updateNightTime() {
   }
   updateTime(NIGHT_SLEEP_INTERVAL);
   writeRTCData();
-  ESP.deepSleep(NIGHT_SLEEP_INTERVAL * 1000);
+  ESP.deepSleepInstant(NIGHT_SLEEP_INTERVAL * 1000);
 
 }
 
@@ -57,7 +56,6 @@ void updateTime(uint32_t sleepInterval) {
   rtcData.unixTimeRemainder = modulo;
   DEBUG_PRINT("Time remainder: ");
   DEBUG_PRINTLN(rtcData.unixTimeRemainder);
-  yield();
 }
 
 time_t getUnixTime() {
@@ -149,6 +147,10 @@ void prepareForSleep() {
   syncCache();
 #endif
 
+  //sleep for a minute to prevent multiple ping
+  updateTime(60000);
+  writeRTCData();
+  ESP.deepSleepInstant(60000 * 1000);
 }
 
 // Post-sleep event
@@ -176,10 +178,21 @@ void prepareForDaytime() {
   DEBUG_PRINTLN(minute());
   getSunriseSunset();
   sendPing();
-  rtcData.sleeping = 0;
-  updateTime(300000);
-  writeRTCData();
-  ESP.deepSleep(300000 * 1000);
+  DEBUG_PRINTLN("END HOUR " + String(rtcData.NIGHT_END_HOUR));
+  if (hour() == rtcData.NIGHT_END_HOUR) {
+    rtcData.sleeping = 0;
+    writeRTCData();
+  } else if (hour() == rtcData.NIGHT_END_HOUR - 1) {
+    //make sure the next time it wakes up it's morning
+    rtcData.sleeping = 0;
+    double lastSleepTime = 60 - minute();
+    DEBUG_PRINTLN("Sleeping for: " + String(lastSleepTime));
+    lastSleepTime = (lastSleepTime * 60) * 1000;
+    updateTime(lastSleepTime);
+    DEBUG_PRINTLN("Resyncing time...");
+    writeRTCData();
+    ESP.deepSleepInstant(lastSleepTime * 1000);
+  }
 }
 
 // Try to resync time with server in the event of a time error.

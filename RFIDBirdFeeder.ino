@@ -43,24 +43,22 @@ SoftwareSerial lora = SoftwareSerial(4, 5);
 #define DEBUG_PRINTHEX(x)
 #endif
 
-
 // CONFIG DEFINES
 char WLAN_SSID[32];
 char WLAN_PASS[32];
-#define HOST "http://feedernet-staging.herokuapp.com"
+//#define HOST "http://feedernet-staging.herokuapp.com"
+#define HOST "http://raspberrypi.local"
 String FEEDERSTUB = " ";
 #define HTTP_TIMEOUT 5000
 #define SLEEP_INTERVAL 4000
 #define WAKE_INTERVAL 100
-#define NIGHT_SLEEP_INTERVAL 45000
+#define NIGHT_SLEEP_INTERVAL 3300000
 #define WIFI_QUICK_MAX_RETRIES 100
 #define WIFI_REGULAR_MAX_RETRIES 600
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
 #define REQUEST_RETRIES 2
 #define VERSION "v1.83"
-
-//RFID rfidModule(1.1);
 
 // RTC data
 struct {
@@ -80,7 +78,6 @@ struct {
   uint8_t NIGHT_END_HOUR;
   uint8_t NIGHT_START_MINUTE;
   uint8_t NIGHT_END_MINUTE;
-
 } rtcData;
 
 long prevMills;
@@ -90,7 +87,6 @@ int intervalWifi = 10000;
 byte count = 0;
 boolean isNightTime = false;
 
-
 const char* lat = "";
 const char* lon = "";
 
@@ -99,10 +95,9 @@ byte tagData[5];
 void setup() {
   digitalWrite(14, HIGH);
   setupRFID();
-
   FEEDERSTUB = WiFi.macAddress();
   WiFi.mode(WIFI_OFF);
-
+  
 #ifdef DEBUG
   Serial.begin(115200);
   DEBUG_PRINTLN(" ");
@@ -138,28 +133,28 @@ void setup() {
   DEBUG_PRINT(" : ");
   DEBUG_PRINTLN(second());
 
+  // Check if awaken from night time.
+  if (rtcData.sleeping == 1) {
+    prepareForDaytime();
+  }
+
   // Night time
-  if (hour() >= rtcData.NIGHT_START_HOUR && hour() <= 23) {
+  if (hour() == rtcData.NIGHT_START_HOUR && minute() > rtcData.NIGHT_START_MINUTE ) {
     DEBUG_PRINTLN("Night time detected.");
     updateNightTime();
-  }
-  if (hour() >= 0 && hour() < rtcData.NIGHT_END_HOUR) {
+  } else if (hour() > rtcData.NIGHT_START_HOUR && hour() < 23) {
+    DEBUG_PRINTLN("Night time detected.");
+    updateNightTime();
+  } else if (hour() >= 0 && hour() < rtcData.NIGHT_END_HOUR) {
     DEBUG_PRINTLN("Night time detected - past midnight");
     updateNightTime();
   }
 
-
-  //TODO : Make this only happen once by adding a isTimeSynced rtcdata flag
   // Time sync before sleep
   if (hour() == rtcData.NIGHT_START_HOUR && rtcData.NIGHT_START_MINUTE > 15 && minute() == rtcData.NIGHT_START_MINUTE - 15 ) {
     prepareForSleep();
   } else if (rtcData.NIGHT_START_MINUTE < 15 && hour() == rtcData.NIGHT_START_HOUR - 1 && minute() == rtcData.NIGHT_START_MINUTE + 45) {
     prepareForSleep();
-  }
-
-  // Check if awaken from night time.
-  if (rtcData.sleeping == 1) {
-    prepareForDaytime();
   }
 
   // Check if time error exists
@@ -169,6 +164,7 @@ void setup() {
       resyncTime();
     }
   }
+
   // Turn on RFID
   digitalWrite(14, LOW);
 }

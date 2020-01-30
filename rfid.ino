@@ -2,10 +2,11 @@
 #define DELAYVAL    320
 #define TIMEOUT     600
 
-int demodOut;
 int shd;
 int mod;
 int rdyClk;
+
+int demodOut;
 bool isHalfRead = false;
 byte tagDataBuffer[2][5];      //A Buffer for verifying the tag data.
 int readCount = 0;          //the number of times a tag has been read. 
@@ -45,7 +46,6 @@ bool decodeTag(unsigned char *buf)
   unsigned char dat;
   unsigned char searchCount = 0;
   unsigned char j;
-
   while (1)
   {
     timeCount = 0;
@@ -200,17 +200,13 @@ bool decodeTag(unsigned char *buf)
           return true;
         }
 
-      }//end if(i==8)
+      }
 
       return false;
 
-    }//if(digitalRead(demodOut))
-  } //while(1)
-
+    }
+  }
 }
-
-
-
 
 //function to compare 2 byte arrays. Returns true if the two arrays match, false of any numbers do not match
 bool compareTagData(byte * tagData1, byte * tagData2)
@@ -237,10 +233,8 @@ void transferToBuffer(byte * tagData, byte * tagDataBuffer)
   }
 }
 
-
 bool scanForTag(byte * tagData)
 {
-
 
   boolean verifyRead = false; //true when a tag's ID matches a previous read, false otherwise
   boolean tagCheck = false;   //true when a tag has been read, false otherwise
@@ -279,10 +273,10 @@ bool scanForTag(byte * tagData)
   else
   {
     if (millis() > WAKE_INTERVAL && isHalfRead == false) {
-      digitalWrite(14, 1);
+      digitalWrite(14, HIGH);
       updateTime(SLEEP_INTERVAL);
       writeRTCData();
-      ESP.deepSleep(SLEEP_INTERVAL * 1000);
+      ESP.deepSleepInstant(SLEEP_INTERVAL * 1000);
     }
     return false;
   }
