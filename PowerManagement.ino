@@ -185,7 +185,7 @@ void prepareForDaytime() {
   } else if (hour() == rtcData.NIGHT_END_HOUR - 1) {
     //make sure the next time it wakes up it's morning
     rtcData.sleeping = 0;
-    double lastSleepTime = 60 - minute();
+    double lastSleepTime = (60 - minute()) + rtcData.NIGHT_END_MINUTE ;
     DEBUG_PRINTLN("Sleeping for: " + String(lastSleepTime));
     lastSleepTime = (lastSleepTime * 60) * 1000;
     updateTime(lastSleepTime);
