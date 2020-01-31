@@ -51,7 +51,7 @@ void updateNightTime() {
 // Update timekeeping (internally)
 void updateTime(uint32_t sleepInterval) {
   rtcData.unixTimeRemainder += (millis() + sleepInterval);
-  uint16_t modulo = rtcData.unixTimeRemainder % 1000;
+  uint32_t modulo = rtcData.unixTimeRemainder % 1000;
   rtcData.unixTime += (rtcData.unixTimeRemainder - modulo) / 1000;
   rtcData.unixTimeRemainder = modulo;
   DEBUG_PRINT("Time remainder: ");
@@ -185,7 +185,7 @@ void prepareForDaytime() {
   } else if (hour() == rtcData.NIGHT_END_HOUR - 1) {
     //make sure the next time it wakes up it's morning
     rtcData.sleeping = 0;
-    double lastSleepTime = (60 - minute()) + rtcData.NIGHT_END_MINUTE ;
+    uint32_t lastSleepTime = (60 - minute()) + rtcData.NIGHT_END_MINUTE ;
     DEBUG_PRINTLN("Sleeping for: " + String(lastSleepTime));
     lastSleepTime = (lastSleepTime * 60) * 1000;
     updateTime(lastSleepTime);
