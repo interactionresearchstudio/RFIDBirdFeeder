@@ -59,7 +59,7 @@ String FEEDERSTUB = " ";
 #define TAG_DEBOUNCE 60
 #define TIME_RESYNC_INTERVAL 3600
 #define REQUEST_RETRIES 2
-#define VERSION "v1.83"
+#define VERSION "v2.0"
 
 // RTC data
 struct {
