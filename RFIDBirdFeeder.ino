@@ -143,7 +143,7 @@ void setup() {
   if (hour() == rtcData.NIGHT_START_HOUR && minute() > rtcData.NIGHT_START_MINUTE ) {
     DEBUG_PRINTLN("Night time detected.");
     updateNightTime();
-  } else if (hour() > rtcData.NIGHT_START_HOUR && hour() < 23) {
+  } else if (hour() > rtcData.NIGHT_START_HOUR && hour() < 24) {
     DEBUG_PRINTLN("Night time detected.");
     updateNightTime();
   } else if (hour() >= 0 && hour() < rtcData.NIGHT_END_HOUR) {
