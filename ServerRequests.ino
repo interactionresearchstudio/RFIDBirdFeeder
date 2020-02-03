@@ -268,11 +268,12 @@ void sendPing() {
   requestFromRadio(100, RADIOID, 'P', " ", LORA_REQUEST_TIMEOUT, LORA_REQUEST_ATTEMPTS);
   //if (reply != "") DEBUG_PRINTLN("Radio request failed.");
 #else
-  const size_t bufferSize = JSON_OBJECT_SIZE(1);
+  const size_t bufferSize = JSON_OBJECT_SIZE(2);
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
   JsonObject& root = jsonBuffer.createObject();
   root["stub"] = FEEDERSTUB;
+  root["rssi"] = WiFi.RSSI();
 
   String payload;
   root.printTo(payload);
