@@ -1,6 +1,6 @@
 
 #define DELAYVAL    320
-#define TIMEOUT     600
+#define TIMEOUT     700
 
 int shd;
 int mod;
